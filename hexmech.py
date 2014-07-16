@@ -21,5 +21,32 @@ def getMetric(name):
     else:
         raise HexagonMetricError("Hexagon metrics not set")
 
-def gridToPixels(xgrid, ygrid):
-    xcoord = xgrid * (getMetric('t') + getMetric('s'))
+def coordToPixels(xgrid, ygrid, xpixeloffset=0, ypixeloffset=0):
+    """
+    Convert the grid coordinate location of a hexagon
+    to pixel a position on the screen.
+    """
+    
+    t = getMetric('t')
+    s = getMetric('s')
+    h = getMetric('h')
+    r = getMetric('r')
+    
+    xcoord = xgrid * (t + s)
+    ycoord = ygrid * h
+
+    if isOdd(xgrid):
+        ycoord += r
+
+    xcoord += xpixeloffset
+    ycoord += ypixeloffset
+
+    return (xcoord, ycoord)
+
+def pixelsToCoord(x, y):
+    """
+    Convert the pixel coordinates of a mouse cursor to find
+    which hexagon on the coordinate grid it lies on.
+    """
+
+    pass
