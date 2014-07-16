@@ -27,7 +27,7 @@ def getMetric(name):
     else:
         raise HexagonMetricError("Hexagon metrics not set")
 
-def coordToPixels(xgrid, ygrid, xpixeloffset=0, ypixeloffset=0):
+def coordsToPixels(xgrid, ygrid, xpixeloffset=0, ypixeloffset=0):
     """
     Convert the grid coordinate location of a hexagon
     to pixel a position on the screen.
@@ -49,7 +49,7 @@ def coordToPixels(xgrid, ygrid, xpixeloffset=0, ypixeloffset=0):
 
     return (xcoord, ycoord)
 
-def pixelsToCoord(x, y):
+def pixelsToCoords(x, y):
     """
     Convert the pixel coordinates of a mouse cursor to find
     which hexagon on the coordinate grid it lies on.

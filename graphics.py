@@ -4,6 +4,7 @@ from pygame.locals import *
 
 import hexagon
 import hexmech
+import life
 
 pygame.init()
 
@@ -28,6 +29,21 @@ class Screen(object):
     def update(self):
         pygame.display.flip()
 
-class World(object):
-    def __init__(self, width, height):
-        self.hexes = []
+class World(life.World):
+    def __init__(self, screen, width, height):
+        super().__init__(width, height)
+        
+        self.bits = []
+
+        self.screen = screen
+
+        self._emptyBit = pygame.image.load("hexagon.png").convert()
+        self._emptyBit.set_colorkey((255,255,255))
+
+    def _drawEmpty(self, x, y):
+        self.screen.blit(self._emptyBit, hexmech.coordsToPixels(x, y))
+
+    def drawEmptyGrid(self):
+        for y in range(self.height):
+            for x in range(self.width):
+                self._drawEmpty(x, y)
