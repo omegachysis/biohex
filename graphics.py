@@ -1,8 +1,9 @@
+#!/usr/bin/env python3
 
 import pygame
 from pygame.locals import *
 
-import hexagon
+import traceback
 import hexmech
 import life
 
@@ -13,6 +14,37 @@ def main():
         width = 186,
         height = 161,
         t = 46)
+
+    screen = Screen(1280, 720, False)
+    world = World(screen, 10, 10)
+
+    engine = Engine(screen, world)
+
+    world.drawEmptyGrid()
+
+    engine.start()
+
+class Engine(object):
+    def __init__(self, screen, world):
+        self.screen = screen
+        self.world = world
+
+        self.quitting = False
+
+    def update(self):
+        pass
+
+    def mainloop(self):
+        while not self.quitting:
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    self.quitting = True
+                elif event.type == KEYDOWN:
+                    if event.key == K_ESCAPE:
+                        self.quitting = True
+
+    def start(self):
+        self.mainloop()
 
 class Screen(object):
     def __init__(self, width, height, fullscreen=False):
@@ -47,3 +79,12 @@ class World(life.World):
         for y in range(self.height):
             for x in range(self.width):
                 self._drawEmpty(x, y)
+
+        self.screen.update()
+
+if __name__ == "__main__":
+    try:
+        main()
+    except:
+        print(traceback.format_exc())
+        input()
