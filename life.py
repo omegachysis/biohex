@@ -1,12 +1,29 @@
 
 import random
 import hexmech
+import glob
+from os import path
 
-bitList = [
+bitList = []
+for file in glob.glob("bits/*.png"):
+    bitList.append(path.basename(file)[:-4])
 
-    "Test",
+def headingVector(bit, heading):
+    """ Return a vector according to a direction to move. """
+    setOdd = (
+        (-1, 0), (0, -1), (1, 0), (1, 1), (0, 1), (-1, 1))
+    setEven = (
+        (-1, -1), (0, -1), (1, -1), (1, 0), (0, 1), (-1, 0))
+    if hexmech.isOdd(bit.x):
+        setThis = setOdd
+    else:
+        setThis = setEven
 
-    ]
+    return setThis[heading]
+
+def headingVectorReverse(heading):
+    """ Return a vector going in the opposite heading direction. """
+    return (heading + 3) % 6
 
 def getAdjacent(bit):
     """ Return all adjacent coordinate sets """
@@ -25,6 +42,14 @@ def getAdjacent(bit):
         prod.append((bit.x + vector[0], bit.y + vector[1]))
 
     return prod
+
+def getAdjacentBits(bit):
+    bits = []
+    for position in getAdjacent(bit):
+        ibit = Bit.world.bitPositions[position[0]][position[1]]
+        if ibit:
+            bits.append(ibit)
+    return bits
 
 def isBitHere(x, y):
     return bool(Bit.world.bitPositions[x][y])
@@ -49,11 +74,13 @@ class Bit(object):
         self.x = x
         self.y = y
         self.world.addBit(self)
+        self.dirty()
         
     def destroy(self):
-        self.world.removeBit(self)
+        Bit.world.removeBit(self)
         Bit.world.bitPositions[self.x][self.y] = 0
         Bit.world.markUpdate(self.x, self.y)
+        Bit.world.unmarkDirty(self)
         
     def tick(self): pass
 
@@ -65,31 +92,25 @@ class Bit(object):
             y = x[1]
             x = x[0]
 
+        val = False
+
         Bit.world.bitPositions[self.x][self.y] = 0
         if isValid(x, y):
             Bit.world.markUpdate(self.x,self.y)
             self.x = x
             self.y = y
             self.dirty()
+            val = True
             
-        Bit.world.bitPositions[self.x][self.y] = 1
+        Bit.world.bitPositions[self.x][self.y] = self
+
+        return val
             
     def move(self, dx, dy=None):
         if dy == None:
             dy = dx[1]
             dx = dx[0]
-        self.moveto((self.x + dx, self.y + dy))
-
-class Walker(Bit):
-    name = "Test"
-    
-    def __init__(self, x, y):
-        super().__init__(x,y)
-
-    def tick(self):
-        adjs = getAdjacentValids(self)
-        if adjs:
-            self.moveto(random.choice(adjs))
+        return self.moveto((self.x + dx, self.y + dy))
 
 class World(object):
     def __init__(self, width, height):
@@ -111,6 +132,7 @@ class World(object):
         Bit.world = self
 
     def markDirty(self, bit): None
+    def unmarkDirty(self, bit): None
     def markUpdate(self, x, y): None
 
     def erase(self, x, y):
@@ -119,9 +141,9 @@ class World(object):
                 bit.destroy()
 
     def addBit(self, bit):
-        if bit not in self.bits:
+        if bit not in self.bits and not isBitHere(bit.x, bit.y):
             self.bits.append(bit)
-            self.bitPositions[bit.x][bit.y] = 1
+            self.bitPositions[bit.x][bit.y] = bit
             
     def removeBit(self, bit):
         if bit in self.bits:
