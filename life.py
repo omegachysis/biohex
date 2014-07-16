@@ -52,17 +52,26 @@ class Bit(object):
         
     def destroy(self):
         self.world.removeBit(self)
+        Bit.world.bitPositions[self.x][self.y] = 0
+        Bit.world.markUpdate(self.x, self.y)
+        
     def tick(self): pass
+
+    def dirty(self):
+        self.world.markDirty(self)
     
     def moveto(self, x, y=None):
         if y == None:
             y = x[1]
             x = x[0]
-            
+
         Bit.world.bitPositions[self.x][self.y] = 0
         if isValid(x, y):
+            Bit.world.markUpdate(self.x,self.y)
             self.x = x
             self.y = y
+            self.dirty()
+            
         Bit.world.bitPositions[self.x][self.y] = 1
             
     def move(self, dx, dy=None):
@@ -89,6 +98,7 @@ class World(object):
 
         self.bits = []
 
+        self.dirtyBits = []
         self.bitPositions = []
         for x in range(width):
             col = []
@@ -96,7 +106,12 @@ class World(object):
                 col.append(0)
             self.bitPositions.append(col)
 
+        self.updatePositions = []
+
         Bit.world = self
+
+    def markDirty(self, bit): None
+    def markUpdate(self, x, y): None
 
     def erase(self, x, y):
         for bit in self.bits:

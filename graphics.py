@@ -63,11 +63,11 @@ class Engine(object):
                 self.world.tick()         
 
                 if f == 0:
-                    self.world.drawEmptyGrid()
-                    self.world.drawAllBits()
+                    self.world.drawEmptyUpdates()
+                    self.world.drawDirtyBits()
                     self.screen.update()
 
-                    f=20
+                    f = 1
         
     def start(self):
         self.mainloop()
@@ -116,13 +116,30 @@ class World(life.World):
         for bit in self.bits:
             self.drawBit(bit)
 
-    def _drawEmpty(self, x, y):
-        self.screen.blit(self._emptyBit, hexmech.coordsToPixels(x, y))
+    def drawDirtyBits(self):
+        for bit in self.dirtyBits:
+            self.drawBit(bit)
+        self.dirtyBits = []
+
+    def drawEmpty(self, pos):
+        self.screen.blit(self._emptyBit, hexmech.coordsToPixels(pos[0], pos[1]))
 
     def drawEmptyGrid(self):
         for y in range(self.height):
             for x in range(self.width):
-                self._drawEmpty(x, y)
+                self.drawEmpty((x,y))
+        self.updatePositions = []
+
+    def drawEmptyUpdates(self):
+        for updatePos in self.updatePositions:
+            self.drawEmpty(updatePos)
+        self.updatePositions = []
+
+    def markDirty(self, bit):
+        self.dirtyBits.append(bit)
+
+    def markUpdate(self, x, y):
+        self.updatePositions.append((x,y))
 
 if __name__ == "__main__":
     try:
