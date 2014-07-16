@@ -14,16 +14,17 @@ def main():
         width = 37, height = 32, t = 9)
 
     screen = Screen(1280, 720, fullscreen = False)
-    world = World(screen, 15, 15)
+    world = World(screen, 30, 20)
 
     engine = Engine(screen, world)
 
     life.Bit.world = world
     
-    life.Walker(5, 5)
+    for i in range(15):
+        life.Walker(0, i)
 
-    screen.fill((255,255,255))
-    
+    screen.fill((0,0,0))
+
     world.drawEmptyGrid()
     world.drawAllBits()
     screen.update()
@@ -86,7 +87,7 @@ class World(life.World):
 
         self.screen = screen
 
-        self._emptyBit = pygame.image.load("hexagon.png").convert()
+        self._emptyBit = pygame.image.load("bits/_empty.png").convert()
         self._emptyBit.set_colorkey((255,255,255))
 
     def _loadBitSurfaces(self):
