@@ -19,4 +19,3 @@ class Screen(object):
     def update(self):
         pygame.display.flip()
 
-    
