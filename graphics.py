@@ -2,6 +2,7 @@
 
 import pygame
 from pygame.locals import *
+import random
 
 import traceback
 import hexmech
@@ -11,17 +12,18 @@ pygame.init()
 
 def main():
     hexmech.setMetrics(
-        width = 37, height = 32, t = 9)
+        width = 10, height = 10, t = 3)
 
     screen = Screen(1280, 720, fullscreen = False)
-    world = World(screen, 30, 20)
+    world = World(screen, 180, 70)
 
     engine = Engine(screen, world)
 
     life.Bit.world = world
     
-    for i in range(15):
-        life.Walker(0, i)
+    for e in range(30):
+        for i in range(10):
+            life.Walker(40 + e, 40 + i)
 
     screen.fill((0,0,0))
 
@@ -38,10 +40,13 @@ class Engine(object):
 
         self.quitting = False
 
+        self.running = False
+
     def update(self):
         pass
 
     def mainloop(self):
+        f = 1
         while not self.quitting:
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -49,13 +54,21 @@ class Engine(object):
                 elif event.type == KEYDOWN:
                     if event.key == K_ESCAPE:
                         self.quitting = True
+                    elif event.key == K_RETURN:
+                        self.running = not self.running
                         
-                    elif event.key == K_SPACE:
-                        self.world.tick()
-                        self.world.drawEmptyGrid()
-                        self.world.drawAllBits()
-                        self.screen.update()
+            if self.running:
+                f -= 1
+                
+                self.world.tick()         
 
+                if f == 0:
+                    self.world.drawEmptyGrid()
+                    self.world.drawAllBits()
+                    self.screen.update()
+
+                    f=20
+        
     def start(self):
         self.mainloop()
 
