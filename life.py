@@ -26,9 +26,16 @@ def getAdjacent(bit):
 
     return prod
 
+def isBitHere(x, y, world):
+    for bit in world.bits:
+        if bit.x == x and bit.y == y:
+            return True
+    return False
+    
 def isValid(x, y, world):
     return (x >= 0 and x < world.width and \
-           y >= 0 and y < world.height)
+           y >= 0 and y < world.height and \
+            not isBitHere(x, y, world))
 
 def getAdjacentValids(bit):
     prod = getAdjacent(bit)
@@ -73,9 +80,9 @@ class Walker(Bit):
         super().__init__(x,y)
 
     def tick(self):
-        print(self.x, self.y, end = "")
-        self.moveto(random.choice(getAdjacentValids(self)))
-        print(" ->", self.x, self.y)
+        adjs = getAdjacentValids(self)
+        if adjs:
+            self.moveto(random.choice(adjs))
 
 class World(object):
     def __init__(self, width, height):
