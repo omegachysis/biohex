@@ -14,17 +14,18 @@ def main():
         width = 37, height = 32, t = 9)
 
     screen = Screen(1280, 720, fullscreen = False)
-    world = World(screen, 5, 5)
+    world = World(screen, 15, 15)
 
     engine = Engine(screen, world)
 
     life.Bit.world = world
-    life.Bit("Test", 0, 0)
+    
+    life.Walker(5, 5)
 
     screen.fill((255,255,255))
+    
     world.drawEmptyGrid()
     world.drawAllBits()
-
     screen.update()
 
     engine.start()
@@ -47,6 +48,12 @@ class Engine(object):
                 elif event.type == KEYDOWN:
                     if event.key == K_ESCAPE:
                         self.quitting = True
+                        
+                    elif event.key == K_SPACE:
+                        self.world.tick()
+                        self.world.drawEmptyGrid()
+                        self.world.drawAllBits()
+                        self.screen.update()
 
     def start(self):
         self.mainloop()
