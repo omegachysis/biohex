@@ -7,6 +7,7 @@ import random
 import traceback
 import hexmech
 import life
+import bits
 
 pygame.init()
 
@@ -20,10 +21,15 @@ def main():
     engine = Engine(screen, world)
 
     life.Bit.world = world
+
+    dna = """
+ffffffffffffffffffffffffffffffffffffffffffffffq
+"""
+
+    bits.Ribosome(20, 20, dna, 5000)
     
-    for e in range(30):
-        for i in range(10):
-            life.Walker(40 + e, 40 + i)
+    for i in range(50):
+        bits.NutrientAminoAcid(random.randrange(world.width), random.randrange(world.height))    
 
     screen.fill((0,0,0))
 
@@ -41,6 +47,7 @@ class Engine(object):
         self.quitting = False
 
         self.running = False
+        self.stepping = False
 
     def update(self):
         pass
@@ -48,6 +55,7 @@ class Engine(object):
     def mainloop(self):
         f = 1
         while not self.quitting:
+            self.stepping = False
             for event in pygame.event.get():
                 if event.type == QUIT:
                     self.quitting = True
@@ -56,8 +64,11 @@ class Engine(object):
                         self.quitting = True
                     elif event.key == K_RETURN:
                         self.running = not self.running
+                    elif event.key == K_SPACE:
+                        self.stepping = True
+                        f = 1
                         
-            if self.running:
+            if self.running or self.stepping:
                 f -= 1
                 
                 self.world.tick()         
@@ -137,6 +148,9 @@ class World(life.World):
 
     def markDirty(self, bit):
         self.dirtyBits.append(bit)
+    def unmarkDirty(self, bit):
+        if bit in self.dirtyBits:
+            self.dirtyBits.remove(bit)
 
     def markUpdate(self, x, y):
         self.updatePositions.append((x,y))
