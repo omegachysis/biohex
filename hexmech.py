@@ -11,6 +11,12 @@ def isEven(num):
 
 class HexagonMetricError(Exception): pass
 
+def setMetrics(width, height, t):
+    setMetric('s', int(width - 2 * t))
+    setMetric('r', int(height / 2))
+    setMetric('h', int(height))
+    setMetric('t', int(t))
+
 def setMetric(name, value):
     globals()[name.lower()] = value
 
