@@ -11,16 +11,21 @@ pygame.init()
 
 def main():
     hexmech.setMetrics(
-        width = 186,
-        height = 161,
-        t = 46)
+        width = 37, height = 32, t = 9)
 
-    screen = Screen(1280, 720, False)
-    world = World(screen, 10, 10)
+    screen = Screen(1280, 720, fullscreen = False)
+    world = World(screen, 5, 5)
 
     engine = Engine(screen, world)
 
+    life.Bit.world = world
+    life.Bit("Test", 0, 0)
+
+    screen.fill((255,255,255))
     world.drawEmptyGrid()
+    world.drawAllBits()
+
+    screen.update()
 
     engine.start()
 
@@ -47,13 +52,17 @@ class Engine(object):
         self.mainloop()
 
 class Screen(object):
-    def __init__(self, width, height, fullscreen=False):
-
+    def __init__(self, width, height, fullscreen=False, cursorLock=False):
         self.canvas = None
         if fullscreen:
             self.canvas = pygame.display.set_mode((width, height), FULLSCREEN)
         else:
             self.canvas = pygame.display.set_mode((width, height))
+
+        pygame.event.set_grab(cursorLock)
+
+    def fill(self, color):
+        self.canvas.fill(color)
 
     def blit(self, surface, position):
         self.canvas.blit(surface, position)
@@ -64,13 +73,27 @@ class Screen(object):
 class World(life.World):
     def __init__(self, screen, width, height):
         super().__init__(width, height)
-        
-        self.bits = []
+
+        self._bitSurfaces = {}
+        self._loadBitSurfaces()
 
         self.screen = screen
 
         self._emptyBit = pygame.image.load("hexagon.png").convert()
         self._emptyBit.set_colorkey((255,255,255))
+
+    def _loadBitSurfaces(self):
+        for bitName in life.bitList:
+            surface = pygame.image.load("bits/" + bitName + ".png").convert()
+            surface.set_colorkey((255,255,255))
+            self._bitSurfaces[bitName] = surface
+
+    def drawBit(self, bit):
+        self.screen.blit(self._bitSurfaces[bit.name], hexmech.coordsToPixels(bit.x, bit.y))
+
+    def drawAllBits(self):
+        for bit in self.bits:
+            self.drawBit(bit)
 
     def _drawEmpty(self, x, y):
         self.screen.blit(self._emptyBit, hexmech.coordsToPixels(x, y))
@@ -80,11 +103,10 @@ class World(life.World):
             for x in range(self.width):
                 self._drawEmpty(x, y)
 
-        self.screen.update()
-
 if __name__ == "__main__":
     try:
         main()
     except:
+        pygame.quit()
         print(traceback.format_exc())
         input()

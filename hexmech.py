@@ -3,6 +3,7 @@ s = None
 t = None
 r = None
 h = None
+w = None
 
 def isOdd(num):
     return bool(num & 0x1)
@@ -16,6 +17,7 @@ def setMetrics(width, height, t):
     setMetric('r', int(height / 2))
     setMetric('h', int(height))
     setMetric('t', int(t))
+    setMetric('w', int(width))
 
 def setMetric(name, value):
     globals()[name.lower()] = value
