@@ -54,7 +54,10 @@ def distance(bit0, bit1):
 def getAdjacentBits(bit):
     bits = []
     for position in getAdjacent(bit):
-        ibit = Bit.world.bitPositions[position[0]][position[1]]
+        try:
+            ibit = Bit.world.bitPositions[position[0]][position[1]]
+        except:
+            ibit = None
         if ibit:
             bits.append(ibit)
     return bits

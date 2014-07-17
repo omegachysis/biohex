@@ -4,7 +4,6 @@ import random
 
 class NutrientAminoAcid(life.Bit):
     name = "NutrientAminoAcid"
-    
     def __init__(self, x, y):
         super().__init__(x,y)
 
@@ -12,6 +11,109 @@ class NutrientAminoAcid(life.Bit):
         adjs = life.getAdjacentValids(self)
         if adjs:
             self.moveto(random.choice(adjs))
+
+class Necrosis(life.Bit):
+    name = "Necrosis"
+    lister = []
+    def __init__(self, x, y):
+        super().__init__(x,y)
+        self.timer = 0
+        self.delay = 10
+        Necrosis.lister.append(self)
+    def destroy(self):
+        super().destroy()
+        try: Necrosis.lister.remove(self)
+        except: pass
+    def tick(self):
+        self.timer -= 1
+        if self.timer <= 0:
+            adjs = life.getAdjacentValids(self)
+            if adjs:
+                self.moveto(random.choice(adjs))
+            self.timer = self.delay
+
+class AcidStrong(life.Bit):
+    name = "AcidStrong"
+    def __init__(self, x, y):
+        super().__init__(x,y)
+        self.timer = 0
+        self.delay = 5
+    def tick(self):
+        self.timer -= 1
+        if self.timer <= 0:
+            adjs = life.getAdjacentValids(self)
+            if adjs:
+                self.moveto(random.choice(adjs))
+            self.timer = self.delay
+        for bit in life.getAdjacentBits(self):
+            bit.destroy()
+            if random.random()<.5:
+                self.destroy()
+                SolventNeutral(self.x, self.y)
+
+class SolventNeutral(life.Bit):
+    name = "SolventNeutral"
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+    def tick(self):
+        adjs = life.getAdjacentValids(self)
+        if adjs:
+            self.moveto(random.choice(adjs))
+
+class Oxidizer(life.Bit):
+    name = "Oxidizer"
+    lister = []
+    def __init__(self, x, y):
+        super().__init__(x,y)
+        self.timer = 0
+        self.delay = 5
+        Oxidizer.lister.append(self)
+    def destroy(self):
+        super().destroy()
+        try: Oxidizer.lister.remove(self)
+        except: pass
+    def tick(self):
+        self.timer -= 1
+        if self.timer <= 0:
+            adjs = life.getAdjacentValids(self)
+            if adjs:
+                self.moveto(random.choice(adjs))
+            self.timer = self.delay
+        for bit in life.getAdjacentBits(self):
+            if bit.name is "Membrane":
+                bit.destroy()
+                self.destroy()
+                for attachment in bit.attachments:
+                    attachment.destroy()
+
+class Antioxidant(life.Bit):
+    name = "Antioxidant"
+    def __init__(self, x, y):
+        super().__init__(x,y)
+        self.timer = 0
+        self.delay = 2
+
+        self.timer1 = 5
+        self.delay1 = 5
+    def tick(self):
+        self.timer -= 1
+        if self.timer <= 0:
+            adjs = life.getAdjacentValids(self)
+            if adjs:
+                self.moveto(random.choice(adjs))
+            self.timer = self.delay
+        self.timer1 -= 1
+        if self.timer1 <= 0:
+            once = False
+            for oxibit in Oxidizer.lister:
+                if life.distance(self, oxibit) <= 15:
+                    oxibit.destroy()
+                    once = True
+            self.timer1 = self.delay1
+            if once:
+                if random.random() < .3:
+                    self.destroy()
 
 class Flesh(life.Bit):
     name = "Flesh"
@@ -24,8 +126,10 @@ class Flesh(life.Bit):
         self.lonely = True
 
         self.flexWait = flexWait
-        self.flexibility = 1
+        self.flexibility = random.randrange(5,8)
         self.stagnation = 0
+
+        self.lifetime = flexWait * 2
 
     def tick(self):
         if self.lonely:
@@ -35,6 +139,9 @@ class Flesh(life.Bit):
                 self.pullflex()
             else:
                 self.flexWait -= 1
+
+        if self.lifetime < self.stagnation:
+            self.destroy()
 
     def pullflex(self):
         ads = life.getAdjacentValids(self)
@@ -118,23 +225,89 @@ class Flesh(life.Bit):
 class Cytoplasm(life.Bit):
     name = "Cytoplasm"
 
+    def __init__(self, x, y, lifetime=100):
+        super().__init__(x,y)
+
+        self.lifetime = lifetime
+        self._lifetime = lifetime
+
+    def tick(self):
+        self.lifetime -= 1
+        
+        if self.lifetime == 0:
+            count = 0
+            abits = life.getAdjacentBits(self)
+            for abit in abits:
+                if abit.name == "Cytoplasm":
+                    count += 1
+            if count <= 3:
+                self.destroy()
+                MembraneDouble(self.x, self.y)
+            
+        if self.lifetime == -self._lifetime:
+            self.destroy()
+
+class MembraneDouble(life.Bit):
+    name = "MembraneDouble"
+
+    def __init__(self, x, y, lifetime=200):
+        super().__init__(x,y)
+
+        self.lifetime = lifetime
+
+    def tick(self):
+        self.lifetime -= 1
+        for bit in life.getAdjacentBits(self):
+            if bit.name is "Membrane":
+                bit.destroy()
+                self.destroy()
+                MembraneConnective(self.x, self.y)
+        if self.lifetime <= 0:
+            self.destroy()
+
+class MembraneConnective(life.Bit):
+    name = "MembraneConnective"
+
     def __init__(self, x, y):
         super().__init__(x,y)
 
+        self.timer = 0
+        self.delay = 100
+
     def tick(self):
-        pass
+        self.timer -= 1
+        if self.timer <= 0:
+            closeMembrane = False
+            for membraneBit in Membrane.lister:
+                if life.distance(membraneBit, self) <= 10:
+                    closeMembrane = True
+            if not closeMembrane:
+                self.destroy()
+                Necrosis(self.x, self.y)
 
 class Membrane(life.Bit):
     name = "Membrane"
+    lister = []
     
-    def __init__(self, x, y, attachments=[]):
+    def __init__(self, x, y, attachments=[], lifetime=500):
         super().__init__(x,y)
 
         self.attachments = list(attachments)
 
         self.lonely = True
 
+        self.lifetime = lifetime
+
+        Membrane.lister.append(self)
+
+    def destroy(self):
+        super().destroy()
+        if self in Membrane.lister:
+            Membrane.lister.remove(self)
+
     def tick(self):
+        self.lifetime -= 1
+        
         if len(self.attachments) >= 2 and \
            isinstance(self.attachments[0], Membrane) and \
            isinstance(self.attachments[1], Membrane):
@@ -147,6 +320,13 @@ class Membrane(life.Bit):
 
                 moveback = False
 
+                e = 0
+                for abit in life.getAdjacentBits(self):
+                    if abit.name == "Cytoplasm":
+                        e += 1
+                if e >= 2:
+                    moveback = True
+                    
                 for attachment in self.attachments:
                     if life.distance(self, attachment) >= 3:
                         moveback = True
@@ -155,6 +335,11 @@ class Membrane(life.Bit):
                     self.moveto(oldx, oldy)
         else:
             self.destroy()
+            Cytoplasm(self.x, self.y)
+
+##        if self.lifetime <= 0:
+##            self.destroy()
+##            MembraneDouble(self.x, self.y)
 
     def attach(self, bit):
         if bit:
@@ -186,6 +371,13 @@ class Ribosome(life.Bit):
         self.rnaFrame = 0
         self.nutrition = nutrition
         self.heading = random.randrange(6)
+
+        self.rnaShort = ""
+        for char in self.rna:
+            if char != 'y':
+                self.rnaShort += char
+
+        print(self.rnaShort)
 
         self.frustration = 0
 
@@ -258,8 +450,8 @@ class Ribosome(life.Bit):
                             self.frustration = 0
                             self.nutrition -= 1
                             self.destroy()
-
-                            finalFlesh = Flesh(self.x, self.y, flexWait=len(self.rna)*2)
+                            
+                            finalFlesh = Flesh(self.x, self.y, flexWait=len(self.rnaShort)*1.1)
                             finalFlesh.attach(abit)
 
                 if not self.destroyed:
@@ -269,6 +461,7 @@ class Ribosome(life.Bit):
                         for abit in abits:
                             if abit.name == "Flesh" and abit != self.previousFlesh:
                                 fleshes += 1
+                        self.nextCodon()
                                 
                         if fleshes:
                             self.placeNewFlesh(self.getFleshPos())
