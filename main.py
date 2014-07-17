@@ -21,14 +21,16 @@ def main():
 
     life.Bit.world = world
 
+    random.seed(5)
+
     rna = """
- """ + "f"*15 +'r'+'f'*25+'r'+'f'*5 + 'rfrf' + 'y'*50 + """q
+ """ + "f"*8 +'r'+'f'*25+'r'+'f'*5 + 'rfrf' + 'y'*50 + """q
 """
 
     bits.Ribosome(90, 35, rna, 0)
     
     for i in range(15):
-        bits.NutrientAminoAcid(random.randrange(world.width), random.randrange(world.height))
+        bits.NutrientAminoAcid(random.randrange(60,110), random.randrange(20, 50))
 
     screen.fill((0,0,0))
 

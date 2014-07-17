@@ -13,6 +13,23 @@ class NutrientAminoAcid(life.Bit):
         if adjs:
             self.moveto(random.choice(adjs))
 
+class NutrientLipid(life.Bit):
+    name = "NutrientLipid"
+    
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+        self.movetimer = 0
+        self.movedelay = 8
+
+    def tick(self):
+        self.movetimer -= 1
+        if self.movetimer <= 0:
+            adjs = life.getAdjacentValids(self)
+            if adjs:
+                self.moveto(random.choice(adjs))
+            self.movetimer = self.movedelay
+
 class Necrosis(life.Bit):
     name = "Necrosis"
     
@@ -457,9 +474,20 @@ class Ribosome(life.Bit):
                             self.frustration = 0
                             self.nutrition -= 1
                             self.destroy()
-                            
+
                             finalFlesh = Flesh(self.x, self.y, flexWait=len(self.rnaShort)*1.1)
                             finalFlesh.attach(abit)
+
+                            self.moveForward()
+                            self.destroy()
+
+                            ads = True
+                            while self.nutrition > 0 and ads:
+                                ads = life.getAdjacentValids(self)
+                                spot = random.choice(ads + [(self.x, self.y)])
+                                NutrientLipid(*spot)
+                                self.nutrition -= 5
+                            
 
                 if not self.destroyed:
                     
