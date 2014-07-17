@@ -26,16 +26,16 @@ def main():
  """ + "f"*15 +'r'+'f'*25+'r'+'f'*5 + 'rfrf' + 'y'*50 + """q
 """
 
-    bits.Ribosome(90, 35, rna, 5000)
+    bits.Ribosome(90, 35, rna, 0)
     
-    for i in range(20):
+    for i in range(30):
         bits.NutrientAminoAcid(random.randrange(world.width), random.randrange(world.height))
     
-    for i in range(20):
+    for i in range(5):
         bits.Oxidizer(random.randrange(world.width), random.randrange(world.height))
-    for i in range(8):
+    for i in range(3):
         bits.Antioxidant(random.randrange(world.width), random.randrange(world.height))
-    for i in range(20):
+    for i in range(3):
         bits.AcidStrong(random.randrange(world.width), random.randrange(world.height))
     
 
@@ -62,6 +62,9 @@ class Engine(object):
 
     def mainloop(self):
         f = 1
+
+        clock = pygame.time.Clock()
+        
         while not self.quitting:
             self.stepping = False
             for event in pygame.event.get():
@@ -87,6 +90,8 @@ class Engine(object):
                     self.screen.update()
 
                     f = 1
+
+                clock.tick(20)
         
     def start(self):
         self.mainloop()

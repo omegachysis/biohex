@@ -4,8 +4,17 @@ import random
 
 class NutrientAminoAcid(life.Bit):
     name = "NutrientAminoAcid"
+    lister = []
     def __init__(self, x, y):
         super().__init__(x,y)
+        NutrientAminoAcid.lister.append(self)
+
+    def destroy(self):
+        super().destroy()
+        try:
+            NutrientAminoAcid.lister.remove(self)
+        except:
+            pass
 
     def tick(self):
         adjs = life.getAdjacentValids(self)
@@ -190,7 +199,7 @@ class Flesh(life.Bit):
                 if self.stagnation >= 10:
                     self.completelyUnattach()
                     self.destroy()
-                    Cytoplasm(self.x, self.y)
+                    FibrousGrowthTissue(self.x, self.y)
         else:
             self.stagnation += 1
                 
@@ -221,6 +230,31 @@ class Flesh(life.Bit):
                 self.lonely = False
             if len(bit.attachments) >= 2:
                 bit.lonely = False
+
+class FibrousGrowthTissue(life.Bit):
+    name = "FibrousGrowthTissue"
+
+    def __init__(self, x, y, lifetime=100):
+        super().__init__(x,y)
+
+        self.lifetime = lifetime
+        self._lifetime = lifetime
+
+    def tick(self):
+        self.lifetime -= 1
+        
+        if self.lifetime == 0:
+            count = 0
+            abits = life.getAdjacentBits(self)
+            for abit in abits:
+                if abit.name == "FibrousGrowthTissue":
+                    count += 1
+            if count <= 3:
+                self.destroy()
+                MembraneDouble(self.x, self.y)
+            
+        if self.lifetime == -self._lifetime:
+            self.destroy()
 
 class Cytoplasm(life.Bit):
     name = "Cytoplasm"
@@ -264,6 +298,15 @@ class MembraneDouble(life.Bit):
                 MembraneConnective(self.x, self.y)
         if self.lifetime <= 0:
             self.destroy()
+
+class MembranePhospholipid(life.Bit):
+    name = "MembranePhospholipid"
+
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+    def tick(self):
+        pass
 
 class MembraneConnective(life.Bit):
     name = "MembraneConnective"
@@ -322,7 +365,7 @@ class Membrane(life.Bit):
 
                 e = 0
                 for abit in life.getAdjacentBits(self):
-                    if abit.name == "Cytoplasm":
+                    if abit.name == "FibrousGrowthTissue":
                         e += 1
                 if e >= 2:
                     moveback = True
@@ -335,7 +378,7 @@ class Membrane(life.Bit):
                     self.moveto(oldx, oldy)
         else:
             self.destroy()
-            Cytoplasm(self.x, self.y)
+            FibrousGrowthTissue(self.x, self.y)
 
 ##        if self.lifetime <= 0:
 ##            self.destroy()
@@ -475,9 +518,9 @@ class Ribosome(life.Bit):
         else:
             self.nextCodon()
 
-        for bit in life.getAdjacentBits(self):
-            if bit.name is "NutrientAminoAcid":
-                self.nutrition += 10
+        for bit in NutrientAminoAcid.lister:
+            if life.distance(bit, self) <= 20:
                 bit.destroy()
+                self.nutrition += 10
 
         
