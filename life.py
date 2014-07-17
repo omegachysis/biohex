@@ -126,6 +126,37 @@ class Bit(object):
 
         self.loopers = []
 
+    def randomWalkTowardsType(self, bitName, searchRadius):
+        bit = random.choice(self.lookout(bitName, searchRadius))
+        walkX = random.randrange(3) - 1
+        walkY = random.randrange(3) - 1
+        if self.x < bit.x:
+            walkX = 1
+        else:
+            walkX = -1
+
+        if self.y < bit.y:
+            walkY = 1
+        else:
+            walkY = -1
+
+        self.move(walkX, walkY)
+
+    def randomWalkTowards(self, bit):
+        walkX = random.randrange(3) - 1
+        walkY = random.randrange(3) - 1
+        if self.x < bit.x:
+            walkX = 1
+        else:
+            walkX = -1
+
+        if self.y < bit.y:
+            walkY = 1
+        else:
+            walkY = -1
+
+        self.move(walkX, walkY)
+
     def lookout(self, bitName, searchRadius):
         return [i for i in self.getList(bitName) if self.distance(i) <= searchRadius]
 
