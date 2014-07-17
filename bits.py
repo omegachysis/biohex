@@ -4,17 +4,9 @@ import random
 
 class NutrientAminoAcid(life.Bit):
     name = "NutrientAminoAcid"
-    lister = []
+    
     def __init__(self, x, y):
         super().__init__(x,y)
-        NutrientAminoAcid.lister.append(self)
-
-    def destroy(self):
-        super().destroy()
-        try:
-            NutrientAminoAcid.lister.remove(self)
-        except:
-            pass
 
     def tick(self):
         adjs = life.getAdjacentValids(self)
@@ -23,16 +15,11 @@ class NutrientAminoAcid(life.Bit):
 
 class Necrosis(life.Bit):
     name = "Necrosis"
-    lister = []
+    
     def __init__(self, x, y):
         super().__init__(x,y)
         self.timer = 0
         self.delay = 10
-        Necrosis.lister.append(self)
-    def destroy(self):
-        super().destroy()
-        try: Necrosis.lister.remove(self)
-        except: pass
     def tick(self):
         self.timer -= 1
         if self.timer <= 0:
@@ -43,6 +30,7 @@ class Necrosis(life.Bit):
 
 class AcidStrong(life.Bit):
     name = "AcidStrong"
+    
     def __init__(self, x, y):
         super().__init__(x,y)
         self.timer = 0
@@ -62,6 +50,7 @@ class AcidStrong(life.Bit):
 
 class SolventNeutral(life.Bit):
     name = "SolventNeutral"
+    
     def __init__(self, x, y):
         super().__init__(x,y)
 
@@ -72,16 +61,11 @@ class SolventNeutral(life.Bit):
 
 class Oxidizer(life.Bit):
     name = "Oxidizer"
-    lister = []
+    
     def __init__(self, x, y):
         super().__init__(x,y)
         self.timer = 0
         self.delay = 5
-        Oxidizer.lister.append(self)
-    def destroy(self):
-        super().destroy()
-        try: Oxidizer.lister.remove(self)
-        except: pass
     def tick(self):
         self.timer -= 1
         if self.timer <= 0:
@@ -98,6 +82,7 @@ class Oxidizer(life.Bit):
 
 class Antioxidant(life.Bit):
     name = "Antioxidant"
+    
     def __init__(self, x, y):
         super().__init__(x,y)
         self.timer = 0
@@ -115,7 +100,7 @@ class Antioxidant(life.Bit):
         self.timer1 -= 1
         if self.timer1 <= 0:
             once = False
-            for oxibit in Oxidizer.lister:
+            for oxibit in self.getlist("Oxidizer"):
                 if life.distance(self, oxibit) <= 15:
                     oxibit.destroy()
                     once = True
@@ -283,7 +268,7 @@ class Cytoplasm(life.Bit):
 
 class MembraneDouble(life.Bit):
     name = "MembraneDouble"
-
+    
     def __init__(self, x, y, lifetime=200):
         super().__init__(x,y)
 
@@ -301,7 +286,7 @@ class MembraneDouble(life.Bit):
 
 class MembranePhospholipid(life.Bit):
     name = "MembranePhospholipid"
-
+    
     def __init__(self, x, y):
         super().__init__(x,y)
 
@@ -310,7 +295,7 @@ class MembranePhospholipid(life.Bit):
 
 class MembraneConnective(life.Bit):
     name = "MembraneConnective"
-
+    
     def __init__(self, x, y):
         super().__init__(x,y)
 
@@ -321,7 +306,7 @@ class MembraneConnective(life.Bit):
         self.timer -= 1
         if self.timer <= 0:
             closeMembrane = False
-            for membraneBit in Membrane.lister:
+            for membraneBit in self.getlist("Membrane"):
                 if life.distance(membraneBit, self) <= 10:
                     closeMembrane = True
             if not closeMembrane:
@@ -330,23 +315,13 @@ class MembraneConnective(life.Bit):
 
 class Membrane(life.Bit):
     name = "Membrane"
-    lister = []
     
     def __init__(self, x, y, attachments=[], lifetime=500):
         super().__init__(x,y)
 
         self.attachments = list(attachments)
-
         self.lonely = True
-
         self.lifetime = lifetime
-
-        Membrane.lister.append(self)
-
-    def destroy(self):
-        super().destroy()
-        if self in Membrane.lister:
-            Membrane.lister.remove(self)
 
     def tick(self):
         self.lifetime -= 1
@@ -518,7 +493,7 @@ class Ribosome(life.Bit):
         else:
             self.nextCodon()
 
-        for bit in NutrientAminoAcid.lister:
+        for bit in self.getlist("NutrientAminoAcid"):
             if life.distance(bit, self) <= 20:
                 bit.destroy()
                 self.nutrition += 10

@@ -37,7 +37,9 @@ def main():
         bits.Antioxidant(random.randrange(world.width), random.randrange(world.height))
     for i in range(3):
         bits.AcidStrong(random.randrange(world.width), random.randrange(world.height))
-    
+
+##    bits.MembranePhospholipid(90, 35)
+##    bits.MembranePhospholipid(90, 37)
 
     screen.fill((0,0,0))
 

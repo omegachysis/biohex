@@ -82,13 +82,25 @@ def getAdjacentValids(bit=None, coord=None):
 class Bit(object):
     world = None
     name = "Test"
+    lister = {}
+    
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.world.addBit(self)
-        self.dirty()
+        placed = self.world.addBit(self)
+        
+        if placed:
+            self.dirty()
+            self.destroyed = False
+            if self.name in __class__.lister:
+                __class__.lister[self.name].append(self)
+            else:
+                __class__.lister[self.name] = [self]
+        else:
+            self.destroyed = True
 
-        self.destroyed = False
+    def getlist(self, name):
+        return __class__.lister[name]
         
     def destroy(self):
         Bit.world.removeBit(self)
@@ -96,6 +108,9 @@ class Bit(object):
         Bit.world.markUpdate(self.x, self.y)
         Bit.world.unmarkDirty(self)
         self.destroyed = True
+
+        if self in __class__.lister[self.name]:
+            __class__.lister[self.name].remove(self)
         
     def tick(self): pass
 
@@ -161,6 +176,9 @@ class World(object):
         if bit not in self.bits and not isBitHere(bit.x, bit.y):
             self.bits.append(bit)
             self.bitPositions[bit.x][bit.y] = bit
+            return True
+        else:
+            return False
             
     def removeBit(self, bit):
         if bit in self.bits:
