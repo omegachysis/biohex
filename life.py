@@ -10,60 +10,16 @@ bitList = []
 for file in glob.glob("bits/*.png"):
     bitList.append(path.basename(file)[:-4])
 
-def getAdjacent(bit=None, coord=None):
-    """ Return all adjacent coordinate sets """
-    if bit:
-        coord = (bit.x, bit.y)
-
-    setOdd = (
-        (-1, 0), (0, -1), (1, 0), (1, 1), (0, 1), (-1, 1))
-    setEven = (
-        (-1, -1), (0, -1), (1, -1), (1, 0), (0, 1), (-1, 0))
-
-    if hexmech.isOdd(coord[0]):
-        setThis = setOdd
-    else:
-        setThis = setEven
-
-    prod = []
-    for vector in setThis:
-        prod.append((coord[0] + vector[0], coord[1] + vector[1]))
-
-    return prod
-
-def distance(bit0, bit1):
-    return math.sqrt((bit0.x-bit1.x)**2 + (bit0.y-bit1.y)**2)
-
-def getAdjacentBits(bit):
-    bits = []
-    for position in getAdjacent(bit):
+def getBit(x, y):
         try:
-            ibit = Bit.world.bitPositions[position[0]][position[1]]
+            return bool(Bit.world.bitPositions[x][y])
         except:
-            ibit = None
-        if ibit:
-            bits.append(ibit)
-    return bits
+            return False
 
-def isBitHere(x, y):
-    try:
-        return bool(Bit.world.bitPositions[x][y])
-    except:
-        return False
-getBit = isBitHere
-    
 def isValid(x, y):
     return (x >= 0 and x < Bit.world.width and \
            y >= 0 and y < Bit.world.height and \
-            not isBitHere(x, y))
-
-def getAdjacentValids(bit=None, coord=None):
-    prod = getAdjacent(bit, coord)
-    newprod = []
-    for coord in prod:
-        if isValid(coord[0], coord[1]):
-            newprod.append(coord)
-    return newprod
+            not getBit(x, y))
 
 class Vector(object):
     def __init__(self, bit, direction=0):
@@ -131,6 +87,21 @@ class Vector(object):
             
     angle = property(getAngle, setAngle)
 
+class Looper(object):
+    def __init__(self, bit, command, delay):
+        self.timer = 2
+        self.delay = delay
+        self.command = command
+        self.bit = bit
+        self.bit.addLooper(self)
+    def tick(self):
+        self.timer -= 1
+        if self.timer <= 0:
+            self.timer = self.delay
+            self.command()
+    def stop(self):
+        self.bit.removeLooper(self)
+
 class Bit(object):
     world = None
     name = "Test"
@@ -153,6 +124,64 @@ class Bit(object):
 
         self.vector = Vector(self, 0)
 
+        self.loopers = []
+
+    def addLooper(self, newLooper):
+        if newLooper not in self.loopers:
+            self.loopers.append(newLooper)
+    def removeLooper(self, looper):
+        if looper in self.loopers:
+            self.loopers.remove(looper)
+
+    def randomWalk(self):
+        self.moveto(random.choice(self.getAdjValids()))
+
+    def distance(self, distantBit):
+        return math.sqrt((self.x-distantBit.x)**2 + (self.y-distantBit.y)**2)
+
+    def getAdjs(self, coord=None):
+        """ Return all adjacent coordinate sets """
+        if not coord:
+            coord = (self.x, self.y)
+
+        setOdd = (
+            (-1, 0), (0, -1), (1, 0), (1, 1), (0, 1), (-1, 1))
+        setEven = (
+            (-1, -1), (0, -1), (1, -1), (1, 0), (0, 1), (-1, 0))
+
+        if hexmech.isOdd(coord[0]):
+            setThis = setOdd
+        else:
+            setThis = setEven
+
+        prod = []
+        for vector in setThis:
+            prod.append((coord[0] + vector[0], coord[1] + vector[1]))
+
+        return prod
+
+    def getAdjBits(self):
+        bits = []
+        for position in self.getAdjs():
+            try:
+                ibit = Bit.world.bitPositions[position[0]][position[1]]
+            except:
+                ibit = None
+            if ibit:
+                bits.append(ibit)
+        return bits
+
+    def getAdjValids(self, coord=None):
+        if not coord:
+            coord = (self.x, self.y)
+            
+        prod = self.getAdjs(coord)
+        newprod = []
+        for coord in prod:
+            if isValid(coord[0], coord[1]):
+                newprod.append(coord)
+        return newprod
+
     def moveForward(self):
         return self.moveto(self.vector.ahead)
     def moveBackward(self):
@@ -171,7 +200,9 @@ class Bit(object):
         if self in __class__.lister[self.name]:
             __class__.lister[self.name].remove(self)
         
-    def tick(self): pass
+    def tick(self):
+        for looper in self.loopers:
+            looper.tick()
 
     def dirty(self):
         self.world.markDirty(self)
@@ -232,7 +263,7 @@ class World(object):
                 bit.destroy()
 
     def addBit(self, bit):
-        if bit not in self.bits and not isBitHere(bit.x, bit.y):
+        if bit not in self.bits and not getBit(bit.x, bit.y):
             try:
                 self.bitPositions[bit.x][bit.y] = bit
                 self.bits.append(bit)
