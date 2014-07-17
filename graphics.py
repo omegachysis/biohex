@@ -22,11 +22,11 @@ def main():
 
     life.Bit.world = world
 
-    dna = """
-ffffffffffffffffffffffffffffffffffffffffffffffq
+    rna = """
+ffffffffffffffffffffffffffffffffffffffffffffffrrfr """ + 'y'*30 + """q
 """
 
-    bits.Ribosome(20, 20, dna, 5000)
+    bits.Ribosome(20, 20, rna, 5900)
     
     for i in range(50):
         bits.NutrientAminoAcid(random.randrange(world.width), random.randrange(world.height))    
