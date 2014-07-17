@@ -269,7 +269,7 @@ class Cytoplasm(life.Bit):
 class MembraneDouble(life.Bit):
     name = "MembraneDouble"
     
-    def __init__(self, x, y, lifetime=200):
+    def __init__(self, x, y, lifetime=100):
         super().__init__(x,y)
 
         self.lifetime = lifetime

@@ -11,44 +11,6 @@ import bits
 
 pygame.init()
 
-def main():
-    hexmech.setMetrics(
-        width = 10, height = 10, t = 3)
-
-    screen = Screen(1280, 720, fullscreen = False)
-    world = World(screen, 180, 70)
-
-    engine = Engine(screen, world)
-
-    life.Bit.world = world
-
-    rna = """
- """ + "f"*15 +'r'+'f'*25+'r'+'f'*5 + 'rfrf' + 'y'*50 + """q
-"""
-
-    bits.Ribosome(90, 35, rna, 0)
-    
-    for i in range(30):
-        bits.NutrientAminoAcid(random.randrange(world.width), random.randrange(world.height))
-    
-    for i in range(5):
-        bits.Oxidizer(random.randrange(world.width), random.randrange(world.height))
-    for i in range(3):
-        bits.Antioxidant(random.randrange(world.width), random.randrange(world.height))
-    for i in range(3):
-        bits.AcidStrong(random.randrange(world.width), random.randrange(world.height))
-
-##    bits.MembranePhospholipid(90, 35)
-##    bits.MembranePhospholipid(90, 37)
-
-    screen.fill((0,0,0))
-
-    world.drawEmptyGrid()
-    world.drawAllBits()
-    screen.update()
-
-    engine.start()
-
 class Engine(object):
     def __init__(self, screen, world):
         self.screen = screen
@@ -169,11 +131,3 @@ class World(life.World):
 
     def markUpdate(self, x, y):
         self.updatePositions.append((x,y))
-
-if __name__ == "__main__":
-    try:
-        main()
-    except:
-        pygame.quit()
-        print(traceback.format_exc())
-        input()
