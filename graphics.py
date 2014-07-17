@@ -44,6 +44,14 @@ class Engine(object):
                     elif event.key == K_SPACE:
                         self.stepping = True
                         f = 1
+                    elif event.key == K_1:
+                        self.ticksPerSecond = 10
+                    elif event.key == K_2:
+                        self.ticksPerSecond = 20
+                    elif event.key == K_3:
+                        self.ticksPerSecond = 30
+                    elif event.key == K_4:
+                        self.ticksPerSecond = 40
                         
             if self.running or self.stepping:
                 f -= 1

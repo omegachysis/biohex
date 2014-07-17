@@ -14,10 +14,10 @@ def main():
     hexmech.setMetrics(
         width = 10, height = 10, t = 3)
 
-    screen = graphics.Screen(1280, 720, fullscreen = False)
+    screen = graphics.Screen(1280, 720, fullscreen = True)
     world = graphics.World(screen, 180, 70)
 
-    engine = graphics.Engine(screen, world, ticksPerSecond = 30)
+    engine = graphics.Engine(screen, world, ticksPerSecond = 10)
 
     life.Bit.world = world
 
@@ -36,7 +36,7 @@ def main():
     for i in range(1):
         bits.StrongAcid(random.randrange(world.width), random.randrange(world.height))
 
-    screen.fill((0,0,0))
+    screen.fill((255,255,255))
 
     world.drawEmptyGrid()
     world.drawAllBits()

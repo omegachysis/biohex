@@ -16,8 +16,8 @@ class NutrientAminoAcid(life.Bit):
     def tick(self):
         self.randomWalk()
 
-class NutrientLipid(life.Bit):
-    name = "NutrientLipid"
+class Lipid(life.Bit):
+    name = "Lipid"
     
     def __init__(self, x, y):
         super().__init__(x,y)
@@ -44,7 +44,7 @@ class HydratedLipid(life.Bit):
                 #membraneBit.completelyUnattach()
             self.destroy()
             if random.random() < .80:
-                NutrientLipid(membraneBit.x-1, membraneBit.y)
+                Lipid(membraneBit.x-1, membraneBit.y)
 
     def tick(self):
         super().tick()
@@ -123,6 +123,26 @@ class Antioxidant(life.Bit):
     def tick(self):
         super().tick()
 
+class Lysosome(life.Bit):
+    name = "Lysosome"
+
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+        self.partner = None
+
+    def tick(self):
+        self.randomWalk()
+        if self.partner:
+            if self.distance(self.partner) >= 7:
+                self.randomWalkTowards(self.partner) 
+        else:
+            if self.lookout("OrganelleMatrix", 7):
+                self.partner = random.choice(self.lookout("OrganelleMatrix", 7))
+                
+        for bit in self.lookout("FibrousGrowthTissue", 2):
+            bit.destroy()
+
 class FibrousGrowthTissue(life.Bit):
     name = "FibrousGrowthTissue"
 
@@ -130,11 +150,9 @@ class FibrousGrowthTissue(life.Bit):
         super().__init__(x,y)
 
         self.lifetime = lifetime
-        self._lifetime = lifetime
 
     def tick(self):
         self.lifetime -= 1
-        
         if self.lifetime == 0:
             count = 0
             abits = self.getAdjBits()
@@ -144,9 +162,19 @@ class FibrousGrowthTissue(life.Bit):
             if count <= 3:
                 self.destroy()
                 MembraneDouble(self.x, self.y)
-            
-        if self.lifetime == -self._lifetime:
-            self.destroy()
+                
+        elif self.lifetime < 0:
+            if self.lookout("MembraneConnective", 2):
+                self.destroy()
+                if random.random() < .10:
+                    Lipid(self.x, self.y)
+
+        for abit in self.getAdjBits():
+            if abit.name == "MembraneCell" and abit.lifetime >= 100:
+                self.destroy()
+                abit.destroy()
+                if random.random() < .10:
+                    Lysosome(self.x, self.y)
 
 class Cytoplasm(life.Bit):
     name = "Cytoplasm"
@@ -181,8 +209,13 @@ class MembranePhospholipid(life.Bit):
     def __init__(self, x, y):
         super().__init__(x,y)
 
+        self.timer = 50
+
     def tick(self):
-        pass
+        self.timer -= 1
+        if self.timer == 0 or self.timer == -30:
+            for adjtile in self.getAdjValids():
+                MembraneDipole(*adjtile)
 
 class MembranePermeable(life.Bit):
     name = "MembranePermeable"
@@ -190,8 +223,46 @@ class MembranePermeable(life.Bit):
     def __init__(self, x, y):
         super().__init__(x,y)
 
+        self.timer =70
+
     def tick(self):
-        pass
+        self.timer -= 1
+
+        if self.timer == 0:
+            if self.lookout("FibrousGrowthTissue", 3):
+                self.destroy()
+                MembraneCell(self.x, self.y)
+                for adjtile in self.getAdjValids():
+                    MembraneCell(*adjtile)
+            else:
+                self.destroy()
+
+class MembraneCell(life.Bit):
+    name = "MembraneCell"
+
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+        self.lifetime = 0
+
+    def tick(self):
+        self.lifetime += 1
+        
+
+class MembraneDipole(life.Bit):
+    name = "MembraneDipole"
+
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+        self.glueTimer = 5
+
+    def tick(self):
+        self.randomWalk()
+        self.glueTimer -= 1
+        if self.glueTimer <= 0:
+            self.destroy()
+            MembranePermeable(self.x, self.y)
 
 class MembraneConnective(life.Bit):
     name = "MembraneConnective"
@@ -206,9 +277,9 @@ class MembraneConnective(life.Bit):
             self.destroy()
             Necrosis(self.x, self.y)
 
-        if self.lookout("NutrientLipid", 8):
+        if self.lookout("Lipid", 8):
             self.destroy()
-            convertbit = random.choice(self.lookout("NutrientLipid", 8))
+            convertbit = random.choice(self.lookout("Lipid", 8))
             convertbit.destroy()
             for i in range(3):
                 HydratedLipid(convertbit.x + i - 1, convertbit.y)
@@ -297,11 +368,6 @@ class Ribosome(life.Bit):
         
         self.vector.angle = random.randrange(6)
 
-        self.rnaShort = ""
-        for char in self.rna:
-            if char != 'y':
-                self.rnaShort += char
-
         self.frustration = 0
 
         self.previousGrowthTissue = None
@@ -311,7 +377,7 @@ class Ribosome(life.Bit):
         return GrowthTissuepos
 
     def placeNewGrowthTissue(self, GrowthTissuepos):
-        newGrowthTissue = GrowthTissue(GrowthTissuepos[0], GrowthTissuepos[1], ribosomeDoping=self.rnaShort.count("d."))
+        newGrowthTissue = GrowthTissue(GrowthTissuepos[0], GrowthTissuepos[1], ribosomeDoping=self.rna.count("d."))
         if self.previousGrowthTissue:
             newGrowthTissue.attach(self.previousGrowthTissue)
         self.previousGrowthTissue = newGrowthTissue
@@ -364,20 +430,21 @@ class Ribosome(life.Bit):
                             self.nutrition -= 1
                             self.destroy()
 
-                            finalGrowthTissue = GrowthTissue(self.x, self.y, ribosomeDoping=self.rnaShort.count("d."))
+                            finalGrowthTissue = GrowthTissue(self.x, self.y, ribosomeDoping=self.rna.count("d."))
                             finalGrowthTissue.attach(abit)
 
                             self.moveForward()
                             self.destroy()
-                            
-##                            ads = True
-##                            while self.nutrition > 0 and ads:
-##                                ads = self.getAdjValids()
-##                                spot = random.choice(ads + [(self.x, self.y)])
-##                                NutrientLipid(*spot)
-##                                self.nutrition -= 5
 
                             Spindle(self.x, self.y)
+                            
+                            ads = True
+                            while self.nutrition > 0 and ads:
+                                ads = self.getAdjValids()
+                                spot = random.choice(ads + [(self.x, self.y)])
+                                Lipid(*spot)
+                                self.nutrition -= 5
+                            
 
                 if not self.destroyed:
                     
@@ -452,7 +519,9 @@ class OrganelleMatrix(life.Bit):
         super().__init__(x,y)
 
     def tick(self):
-        pass
+        for adjbit in self.getAdjBits():
+            if adjbit.name == "MembraneCell":
+                adjbit.destroy()
 
 class GrowthTissue(life.Bit):
     name = "GrowthTissue"
