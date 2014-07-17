@@ -12,7 +12,7 @@ import bits
 pygame.init()
 
 class Engine(object):
-    def __init__(self, screen, world):
+    def __init__(self, screen, world, ticksPerSecond=30):
         self.screen = screen
         self.world = world
 
@@ -20,6 +20,8 @@ class Engine(object):
 
         self.running = False
         self.stepping = False
+
+        self.ticksPerSecond = ticksPerSecond
 
     def update(self):
         pass
@@ -55,7 +57,7 @@ class Engine(object):
 
                     f = 1
 
-                clock.tick(20)
+                clock.tick(self.ticksPerSecond)
         
     def start(self):
         self.mainloop()

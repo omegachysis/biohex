@@ -126,6 +126,9 @@ class Bit(object):
 
         self.loopers = []
 
+    def lookout(self, bitName, searchRadius):
+        return [i for i in self.getList(bitName) if self.distance(i) <= searchRadius]
+
     def addLooper(self, newLooper):
         if newLooper not in self.loopers:
             self.loopers.append(newLooper)
@@ -134,7 +137,7 @@ class Bit(object):
             self.loopers.remove(looper)
 
     def randomWalk(self):
-        self.moveto(random.choice(self.getAdjValids()))
+        self.moveto(random.choice(self.getAdjValids(allowNull = False)))
 
     def distance(self, distantBit):
         return math.sqrt((self.x-distantBit.x)**2 + (self.y-distantBit.y)**2)
@@ -160,9 +163,11 @@ class Bit(object):
 
         return prod
 
-    def getAdjBits(self):
+    def getAdjBits(self, coord=None):
+        if not coord:
+            coord = (self.x, self.y)
         bits = []
-        for position in self.getAdjs():
+        for position in self.getAdjs(coord):
             try:
                 ibit = Bit.world.bitPositions[position[0]][position[1]]
             except:
@@ -171,7 +176,7 @@ class Bit(object):
                 bits.append(ibit)
         return bits
 
-    def getAdjValids(self, coord=None):
+    def getAdjValids(self, coord=None, allowNull=True):
         if not coord:
             coord = (self.x, self.y)
             
@@ -180,6 +185,10 @@ class Bit(object):
         for coord in prod:
             if isValid(coord[0], coord[1]):
                 newprod.append(coord)
+
+        if not newprod and not allowNull:
+            newprod=[coord]
+                
         return newprod
 
     def moveForward(self):
@@ -187,8 +196,12 @@ class Bit(object):
     def moveBackward(self):
         return self.moveto(self.vector.behind)
 
-    def getlist(self, name):
-        return __class__.lister[name]
+    def getList(self, name):
+        if name in __class__.lister:
+            return __class__.lister[name]
+        else:
+            __class__.lister[name] = []
+            return []
         
     def destroy(self):
         Bit.world.removeBit(self)

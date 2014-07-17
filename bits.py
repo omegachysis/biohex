@@ -2,6 +2,11 @@
 import life
 import random
 
+class Test(life.Bit):
+    name = "Test"
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
 class NutrientAminoAcid(life.Bit):
     name = "NutrientAminoAcid"
     
@@ -22,6 +27,28 @@ class NutrientLipid(life.Bit):
     def tick(self):
         super().tick()
 
+class HydratedLipid(life.Bit):
+    name = "HydratedLipid"
+    
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+        life.Looper(self, self.randomWalk, 5)
+        life.Looper(self, self.dehydrateLipids, 8)
+
+    def dehydrateLipids(self):
+        if self.lookout("Membrane", 7):
+            membraneBit = random.choice(self.lookout("Membrane", 7))
+            if random.random() < .20:
+                membraneBit.destroy()
+                #membraneBit.completelyUnattach()
+            self.destroy()
+            if random.random() < .80:
+                NutrientLipid(membraneBit.x-1, membraneBit.y)
+
+    def tick(self):
+        super().tick()
+
 class Necrosis(life.Bit):
     name = "Necrosis"
     
@@ -33,8 +60,8 @@ class Necrosis(life.Bit):
     def tick(self):
         super().tick()
 
-class AcidStrong(life.Bit):
-    name = "AcidStrong"
+class StrongAcid(life.Bit):
+    name = "StrongAcid"
     
     def __init__(self, x, y):
         super().__init__(x,y)
@@ -48,10 +75,10 @@ class AcidStrong(life.Bit):
             bit.destroy()
             if random.random()<.5:
                 self.destroy()
-                SolventNeutral(self.x, self.y)
+                NeutralSolvent(self.x, self.y)
 
-class SolventNeutral(life.Bit):
-    name = "SolventNeutral"
+class NeutralSolvent(life.Bit):
+    name = "NeutralSolvent"
     
     def __init__(self, x, y):
         super().__init__(x,y)
@@ -70,7 +97,7 @@ class Oxidizer(life.Bit):
     def tick(self):
         super().tick()
         
-        for bit in life.getAdjBits(self):
+        for bit in self.getAdjBits():
             if bit.name is "Membrane":
                 bit.destroy()
                 self.destroy()
@@ -88,46 +115,381 @@ class Antioxidant(life.Bit):
         life.Looper(self, self.antioxidize, 5)
 
     def antioxidize(self):
-        once = False
-        for oxibit in self.getlist("Oxidizer"):
-            if life.distance(self, oxibit) <= 15:
-                oxibit.destroy()
-                once = True
-        self.timer = self.delay
-        if once:
-            if random.random() < .3:
+        for bit in self.lookout("Oxidizer", 15):
+            bit.destroy()
+            if random.random() < .10:
                 self.destroy()
             
     def tick(self):
         super().tick()
 
-class Flesh(life.Bit):
-    name = "Flesh"
+class FibrousGrowthTissue(life.Bit):
+    name = "FibrousGrowthTissue"
+
+    def __init__(self, x, y, lifetime=100):
+        super().__init__(x,y)
+
+        self.lifetime = lifetime
+        self._lifetime = lifetime
+
+    def tick(self):
+        self.lifetime -= 1
+        
+        if self.lifetime == 0:
+            count = 0
+            abits = self.getAdjBits()
+            for abit in abits:
+                if abit.name == "FibrousGrowthTissue":
+                    count += 1
+            if count <= 3:
+                self.destroy()
+                MembraneDouble(self.x, self.y)
+            
+        if self.lifetime == -self._lifetime:
+            self.destroy()
+
+class Cytoplasm(life.Bit):
+    name = "Cytoplasm"
+
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+    def tick(self):
+        pass
+
+class MembraneDouble(life.Bit):
+    name = "MembraneDouble"
     
-    def __init__(self, x, y, attachments=[], flexWait=5):
+    def __init__(self, x, y, lifetime=100):
+        super().__init__(x,y)
+
+        self.lifetime = lifetime
+
+    def tick(self):
+        self.lifetime -= 1
+        for bit in self.getAdjBits():
+            if bit.name is "Membrane":
+                bit.destroy()
+                self.destroy()
+                MembraneConnective(self.x, self.y)
+        if self.lifetime <= 0:
+            self.destroy()
+
+class MembranePhospholipid(life.Bit):
+    name = "MembranePhospholipid"
+    
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+    def tick(self):
+        pass
+
+class MembranePermeable(life.Bit):
+    name = "MembranePermeable"
+
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+    def tick(self):
+        pass
+
+class MembraneConnective(life.Bit):
+    name = "MembraneConnective"
+    
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+        life.Looper(self, self.decay, 30)
+
+    def decay(self):
+        if not self.lookout("Membrane", 10):
+            self.destroy()
+            Necrosis(self.x, self.y)
+
+        if self.lookout("NutrientLipid", 8):
+            self.destroy()
+            convertbit = random.choice(self.lookout("NutrientLipid", 8))
+            convertbit.destroy()
+            for i in range(3):
+                HydratedLipid(convertbit.x + i - 1, convertbit.y)
+            MembranePhospholipid(self.x, self.y)
+
+    def tick(self):
+        super().tick()
+
+class Membrane(life.Bit):
+    name = "Membrane"
+    
+    def __init__(self, x, y, attachments=[], lifetime=500):
+        super().__init__(x,y)
+
+        self.attachments = list(attachments)
+        self.lonely = True
+        self.lifetime = lifetime
+
+    def tick(self):
+        self.lifetime -= 1
+        
+        if len(self.attachments) >= 2 and \
+           isinstance(self.attachments[0], Membrane) and \
+           isinstance(self.attachments[1], Membrane):
+            ads = self.getAdjValids()
+            if ads:
+                oldx = self.x
+                oldy = self.y
+
+                self.moveto(random.choice(ads))
+
+                moveback = False
+
+                e = 0
+                for abit in self.getAdjBits():
+                    if abit.name == "FibrousGrowthTissue":
+                        e += 1
+                if e >= 2:
+                    moveback = True
+                    
+                for attachment in self.attachments:
+                    if self.distance(attachment) >= 3:
+                        moveback = True
+
+                if moveback:
+                    self.moveto(oldx, oldy)
+        else:
+            self.destroy()
+            FibrousGrowthTissue(self.x, self.y)
+
+    def completelyUnattach(self):
+        for attachBit in self.attachments:
+            if self in attachBit.attachments:
+                attachBit.attachments.remove(self)
+        self.attachments = []
+
+    def attach(self, bit):
+        if bit:
+            if bit not in self.attachments:
+                self.attachments.append(bit)
+            if self not in bit.attachments:
+                bit.attachments.append(self)
+            if len(self.attachments) >= 2:
+                self.lonely = False
+            if len(bit.attachments) >= 2:
+                bit.lonely = False
+
+# dna
+#---------------
+# f - place GrowthTissue
+# r - turn right
+# l - turn left
+# q - destroy
+# y - follow alongside GrowthTissueline, placing GrowthTissue along the way.
+#      If lonely GrowthTissue is found, destroy and attach.
+
+class Ribosome(life.Bit):
+    name = "Ribosome"
+
+    def __init__(self, x, y, rna, nutrition = 5):
+        super().__init__(x,y)
+
+        self.rna = rna
+        self.rnaFrame = 0
+        self.nutrition = nutrition
+        
+        self.vector.angle = random.randrange(6)
+
+        self.rnaShort = ""
+        for char in self.rna:
+            if char != 'y':
+                self.rnaShort += char
+
+        self.frustration = 0
+
+        self.previousGrowthTissue = None
+    
+    def getGrowthTissuePos(self):
+        GrowthTissuepos = self.vector.behind
+        return GrowthTissuepos
+
+    def placeNewGrowthTissue(self, GrowthTissuepos):
+        newGrowthTissue = GrowthTissue(GrowthTissuepos[0], GrowthTissuepos[1], ribosomeDoping=self.rnaShort.count("d."))
+        if self.previousGrowthTissue:
+            newGrowthTissue.attach(self.previousGrowthTissue)
+        self.previousGrowthTissue = newGrowthTissue
+
+    def nextCodon(self):
+        self.rnaFrame += 1
+
+    def tick(self):
+        try:
+            codon = self.rna[self.rnaFrame]
+        except:
+            codon = ''
+            
+        if codon is 'f':
+            if self.nutrition > 0:
+                
+                if self.moveForward():
+                    
+                    GrowthTissuepos = self.getGrowthTissuePos()
+                    
+                    if not life.getBit(*GrowthTissuepos):
+                        self.frustration = 0
+                        self.nutrition -= 1
+                        self.nextCodon()
+                        self.placeNewGrowthTissue(GrowthTissuepos)
+                        
+                else:
+                    self.frustration += 1
+                    if self.frustration >= 10:
+                        self.vector.turnRight()
+                        
+        elif codon is 'r':
+            self.vector.turnRight()
+            self.nextCodon()
+            
+        elif codon is 'l':
+            self.vector.turnLeft()
+            self.nextCodon()
+            
+        elif codon is 'q':
+            self.destroy()
+            
+        elif codon is 'y':
+            if self.nutrition > 0:
+                abits = self.getAdjBits()
+                for abit in abits:
+                    if abit.name == "GrowthTissue":
+                        if abit.lonely and abit != self.previousGrowthTissue:
+                            self.frustration = 0
+                            self.nutrition -= 1
+                            self.destroy()
+
+                            finalGrowthTissue = GrowthTissue(self.x, self.y, ribosomeDoping=self.rnaShort.count("d."))
+                            finalGrowthTissue.attach(abit)
+
+                            self.moveForward()
+                            self.destroy()
+                            
+##                            ads = True
+##                            while self.nutrition > 0 and ads:
+##                                ads = self.getAdjValids()
+##                                spot = random.choice(ads + [(self.x, self.y)])
+##                                NutrientLipid(*spot)
+##                                self.nutrition -= 5
+
+                            Spindle(self.x, self.y)
+
+                if not self.destroyed:
+                    
+                    if self.moveForward():
+                        abits = self.getAdjBits()
+                        GrowthTissuees = 0
+                        for abit in abits:
+                            if abit.name == "GrowthTissue" and abit != self.previousGrowthTissue:
+                                GrowthTissuees += 1
+                        self.nextCodon()
+                                
+                        if GrowthTissuees:
+                            self.placeNewGrowthTissue(self.getGrowthTissuePos())
+                        else:
+                            self.moveBackward()
+                            #Test(*self.vector.ahead)
+                            self.vector.turnRight()
+                                
+                    else:
+                        self.vector.turnRight()
+            
+            
+        else:
+            self.nextCodon()
+
+        for bit in self.lookout("NutrientAminoAcid", 20):
+            bit.destroy()
+            self.nutrition += 10
+
+class Spindle(life.Bit):
+    name = "Spindle"
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+    def tick(self):
+        if self.moveForward():
+            abits = self.getAdjBits()
+            GrowthTissuees = 0
+            for abit in abits:
+                if abit.name == "GrowthTissue":
+                    GrowthTissuees += 1
+                    
+            if not GrowthTissuees or "FoldingMatrix" in [i.name for i in abits]:
+                self.moveBackward()
+                self.vector.turnRight()
+
+            else:
+                FoldingMatrix(*self.vector.behind)
+                for abit in self.getAdjBits(self.vector.behind):
+                    if abit.name == "GrowthTissue":
+                        abit.triggeredFlexing = True
+                    
+        else:
+            self.vector.turnRight()
+
+class FoldingMatrix(life.Bit):
+    name = "FoldingMatrix"
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+        self.life = 6
+
+    def tick(self):
+        if self.life > 0:
+            self.life -= 1
+        else:
+            self.destroy()
+
+class OrganelleMatrix(life.Bit):
+    name = "OrganelleMatrix"
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+    def tick(self):
+        pass
+
+class GrowthTissue(life.Bit):
+    name = "GrowthTissue"
+    
+    def __init__(self, x, y, attachments=[], ribosomeDoping=5):
         super().__init__(x,y)
 
         self.attachments = list(attachments)
 
         self.lonely = True
-
-        self.flexWait = flexWait
-        self.flexibility = random.randrange(5,8)
+        
+        self.flexibility = ribosomeDoping
         self.stagnation = 0
 
-        self.lifetime = flexWait * 2
+        self.lifetime = 100
+
+        self.triggeredFlexing = None
+        self.flexingCountdown = 25
 
     def tick(self):
         if self.lonely:
-            pass
+            if self.triggeredFlexing:
+                self.destroy()
+                OrganelleMatrix(self.x, self.y)
         else:
-            if self.flexWait <= 0:
-                self.pullflex()
-            else:
-                self.flexWait -= 1
+            if self.triggeredFlexing:
+                self.flexingCountdown -= 1
+                if self.flexingCountdown <= 0:
+                    if self.flexibility >= 0:
+                        self.pullflex()
+                        self.flexibility -= 1
+                    else:
+                        self.stagnation += 1
 
-        if self.lifetime < self.stagnation:
-            self.destroy()
+            if self.lifetime < self.stagnation:
+                self.destroy()
+                OrganelleMatrix(self.x, self.y)
 
     def pullflex(self):
         ads = self.getAdjValids()
@@ -207,288 +569,4 @@ class Flesh(life.Bit):
                 self.lonely = False
             if len(bit.attachments) >= 2:
                 bit.lonely = False
-
-class FibrousGrowthTissue(life.Bit):
-    name = "FibrousGrowthTissue"
-
-    def __init__(self, x, y, lifetime=100):
-        super().__init__(x,y)
-
-        self.lifetime = lifetime
-        self._lifetime = lifetime
-
-    def tick(self):
-        self.lifetime -= 1
-        
-        if self.lifetime == 0:
-            count = 0
-            abits = self.getAdjBits()
-            for abit in abits:
-                if abit.name == "FibrousGrowthTissue":
-                    count += 1
-            if count <= 3:
-                self.destroy()
-                MembraneDouble(self.x, self.y)
-            
-        if self.lifetime == -self._lifetime:
-            self.destroy()
-
-class Cytoplasm(life.Bit):
-    name = "Cytoplasm"
-
-    def __init__(self, x, y, lifetime=100):
-        super().__init__(x,y)
-
-        self.lifetime = lifetime
-        self._lifetime = lifetime
-
-    def tick(self):
-        self.lifetime -= 1
-        
-        if self.lifetime == 0:
-            count = 0
-            abits = self.getAdjBits()
-            for abit in abits:
-                if abit.name == "Cytoplasm":
-                    count += 1
-            if count <= 3:
-                self.destroy()
-                MembraneDouble(self.x, self.y)
-            
-        if self.lifetime == -self._lifetime:
-            self.destroy()
-
-class MembraneDouble(life.Bit):
-    name = "MembraneDouble"
-    
-    def __init__(self, x, y, lifetime=100):
-        super().__init__(x,y)
-
-        self.lifetime = lifetime
-
-    def tick(self):
-        self.lifetime -= 1
-        for bit in self.getAdjBits():
-            if bit.name is "Membrane":
-                bit.destroy()
-                self.destroy()
-                MembraneConnective(self.x, self.y)
-        if self.lifetime <= 0:
-            self.destroy()
-
-class MembranePhospholipid(life.Bit):
-    name = "MembranePhospholipid"
-    
-    def __init__(self, x, y):
-        super().__init__(x,y)
-
-    def tick(self):
-        pass
-
-class MembraneConnective(life.Bit):
-    name = "MembraneConnective"
-    
-    def __init__(self, x, y):
-        super().__init__(x,y)
-
-        life.Looper(self, self.decay, 30)
-
-    def decay(self):
-        closeMembrane = False
-        for membraneBit in self.getlist("Membrane"):
-            if self.distance(membraneBit) <= 10:
-                closeMembrane = True
-        if not closeMembrane:
-            self.destroy()
-            Necrosis(self.x, self.y)
-
-    def tick(self):
-        super().tick()
-
-class Membrane(life.Bit):
-    name = "Membrane"
-    
-    def __init__(self, x, y, attachments=[], lifetime=500):
-        super().__init__(x,y)
-
-        self.attachments = list(attachments)
-        self.lonely = True
-        self.lifetime = lifetime
-
-    def tick(self):
-        self.lifetime -= 1
-        
-        if len(self.attachments) >= 2 and \
-           isinstance(self.attachments[0], Membrane) and \
-           isinstance(self.attachments[1], Membrane):
-            ads = self.getAdjValids()
-            if ads:
-                oldx = self.x
-                oldy = self.y
-
-                self.moveto(random.choice(ads))
-
-                moveback = False
-
-                e = 0
-                for abit in self.getAdjBits():
-                    if abit.name == "FibrousGrowthTissue":
-                        e += 1
-                if e >= 2:
-                    moveback = True
-                    
-                for attachment in self.attachments:
-                    if self.distance(attachment) >= 3:
-                        moveback = True
-
-                if moveback:
-                    self.moveto(oldx, oldy)
-        else:
-            self.destroy()
-            FibrousGrowthTissue(self.x, self.y)
-
-##        if self.lifetime <= 0:
-##            self.destroy()
-##            MembraneDouble(self.x, self.y)
-
-    def attach(self, bit):
-        if bit:
-            if bit not in self.attachments:
-                self.attachments.append(bit)
-            if self not in bit.attachments:
-                bit.attachments.append(self)
-            if len(self.attachments) >= 2:
-                self.lonely = False
-            if len(bit.attachments) >= 2:
-                bit.lonely = False
-
-# dna
-#---------------
-# f - place flesh
-# r - turn right
-# l - turn left
-# q - destroy
-# y - follow alongside fleshline, placing flesh along the way.
-#      If lonely flesh is found, destroy and attach.
-
-class Ribosome(life.Bit):
-    name = "Ribosome"
-
-    def __init__(self, x, y, rna, nutrition = 5):
-        super().__init__(x,y)
-
-        self.rna = rna
-        self.rnaFrame = 0
-        self.nutrition = nutrition
-        
-        self.vector.angle = random.randrange(6)
-
-        self.rnaShort = ""
-        for char in self.rna:
-            if char != 'y':
-                self.rnaShort += char
-
-        self.frustration = 0
-
-        self.previousFlesh = None
-    
-    def getFleshPos(self):
-        fleshpos = self.vector.behind
-        return fleshpos
-
-    def placeNewFlesh(self, fleshpos):
-        newFlesh = Flesh(fleshpos[0], fleshpos[1], flexWait=len(self.rna)*2)
-        if self.previousFlesh:
-            newFlesh.attach(self.previousFlesh)
-        self.previousFlesh = newFlesh
-
-    def nextCodon(self):
-        self.rnaFrame += 1
-
-    def tick(self):
-        try:
-            codon = self.rna[self.rnaFrame]
-        except:
-            codon = ''
-            
-        if codon is 'f':
-            if self.nutrition > 0:
-                
-                if self.moveForward():
-                    
-                    fleshpos = self.getFleshPos()
-                    
-                    if not life.getBit(*fleshpos):
-                        self.frustration = 0
-                        self.nutrition -= 1
-                        self.nextCodon()
-                        self.placeNewFlesh(fleshpos)
-                        
-                else:
-                    self.frustration += 1
-                    if self.frustration >= 10:
-                        self.vector.turnRight()
-                        
-        elif codon is 'r':
-            self.vector.turnRight()
-            self.nextCodon()
-            
-        elif codon is 'l':
-            self.vector.turnLeft()
-            self.nextCodon()
-            
-        elif codon is 'q':
-            self.destroy()
-            
-        elif codon is 'y':
-            if self.nutrition > 0:
-                abits = self.getAdjBits()
-                for abit in abits:
-                    if abit.name == "Flesh":
-                        if abit.lonely and abit != self.previousFlesh:
-                            self.frustration = 0
-                            self.nutrition -= 1
-                            self.destroy()
-
-                            finalFlesh = Flesh(self.x, self.y, flexWait=len(self.rnaShort)*1.1)
-                            finalFlesh.attach(abit)
-
-                            self.moveForward()
-                            self.destroy()
-
-                            ads = True
-                            while self.nutrition > 0 and ads:
-                                ads = self.getAdjValids()
-                                spot = random.choice(ads + [(self.x, self.y)])
-                                NutrientLipid(*spot)
-                                self.nutrition -= 5
-                            
-
-                if not self.destroyed:
-                    
-                    if self.moveForward():
-                        abits = self.getAdjBits()
-                        fleshes = 0
-                        for abit in abits:
-                            if abit.name == "Flesh" and abit != self.previousFlesh:
-                                fleshes += 1
-                        self.nextCodon()
-                                
-                        if fleshes:
-                            self.placeNewFlesh(self.getFleshPos())
-                        else:
-                            self.moveBackward()
-                            self.vector.turnRight()
-                    else:
-                        self.vector.turnRight()
-            
-            
-        else:
-            self.nextCodon()
-
-        for bit in self.getlist("NutrientAminoAcid"):
-            if self.distance(bit) <= 20:
-                bit.destroy()
-                self.nutrition += 10
-
         

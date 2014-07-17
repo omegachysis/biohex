@@ -17,20 +17,24 @@ def main():
     screen = graphics.Screen(1280, 720, fullscreen = False)
     world = graphics.World(screen, 180, 70)
 
-    engine = graphics.Engine(screen, world)
+    engine = graphics.Engine(screen, world, ticksPerSecond = 30)
 
     life.Bit.world = world
 
-    random.seed(5)
+    random.seed(6)
 
-    rna = """
- """ + "f"*8 +'r'+'f'*25+'r'+'f'*5 + 'rfrf' + 'y'*50 + """q
-"""
+    rna = " " + \
+          'f'*8 +'r'+'f'*25+'r'+'f'*20 + 'r' + 'f'*20 + 'rf' + 'y'*500 + 'q' + \
+          'd.'*15
 
     bits.Ribosome(90, 35, rna, 0)
     
-    for i in range(15):
+    for i in range(35):
         bits.NutrientAminoAcid(random.randrange(60,110), random.randrange(20, 50))
+    for i in range(5):
+        bits.Oxidizer(random.randrange(world.width), random.randrange(world.height))
+    for i in range(1):
+        bits.StrongAcid(random.randrange(world.width), random.randrange(world.height))
 
     screen.fill((0,0,0))
 
