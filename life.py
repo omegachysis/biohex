@@ -10,23 +10,6 @@ bitList = []
 for file in glob.glob("bits/*.png"):
     bitList.append(path.basename(file)[:-4])
 
-def headingVector(bit, heading):
-    """ Return a vector according to a direction to move. """
-    setOdd = (
-        (-1, 0), (0, -1), (1, 0), (1, 1), (0, 1), (-1, 1))
-    setEven = (
-        (-1, -1), (0, -1), (1, -1), (1, 0), (0, 1), (-1, 0))
-    if hexmech.isOdd(bit.x):
-        setThis = setOdd
-    else:
-        setThis = setEven
-
-    return setThis[heading]
-
-def headingVectorReverse(heading):
-    """ Return a vector going in the opposite heading direction. """
-    return (heading + 3) % 6
-
 def getAdjacent(bit=None, coord=None):
     """ Return all adjacent coordinate sets """
     if bit:
@@ -63,7 +46,10 @@ def getAdjacentBits(bit):
     return bits
 
 def isBitHere(x, y):
-    return bool(Bit.world.bitPositions[x][y])
+    try:
+        return bool(Bit.world.bitPositions[x][y])
+    except:
+        return False
 getBit = isBitHere
     
 def isValid(x, y):
@@ -78,6 +64,72 @@ def getAdjacentValids(bit=None, coord=None):
         if isValid(coord[0], coord[1]):
             newprod.append(coord)
     return newprod
+
+class Vector(object):
+    def __init__(self, bit, direction=0):
+        self.bit = bit
+        self._direction = direction
+        self._ahead = None
+
+    def reverse(self):
+        self.angle -= 3
+    def turnLeft(self, units=1):
+        self.angle -= units
+    def turnRight(self, units=1):
+        self.angle += units
+
+    def getAhead(self):
+        if self._direction != None:
+            setOdd = (
+                (-1, 0), (0, -1), (1, 0), (1, 1), (0, 1), (-1, 1))
+            setEven = (
+                (-1, -1), (0, -1), (1, -1), (1, 0), (0, 1), (-1, 0))
+            if hexmech.isOdd(self.bit.x):
+                setThis = setOdd
+            else:
+                setThis = setEven
+            return (setThis[self._direction][0] + self.bit.x, setThis[self._direction][1] + self.bit.y)
+        
+        else:
+            return (self._ahead[0] + self.bit.x, self._ahead[1] + self.bit.y)
+    
+    def setAhead(self, value):
+        setOdd = (
+            (-1, 0), (0, -1), (1, 0), (1, 1), (0, 1), (-1, 1))
+        setEven = (
+            (-1, -1), (0, -1), (1, -1), (1, 0), (0, 1), (-1, 0))
+        
+        if value in setOdd and hexmech.isOdd(self.bit.x):
+            self._direction = setOdd.index(value)
+        elif value in setEven and hexmech.isEven(self.bit.x):
+            self._direction = setEven.index(value)
+        else:
+            self._direction = None
+            self._ahead = (self.x + value[0], self.y + value[1])
+
+    ahead = property(getAhead, setAhead)
+
+    def getBehind(self):
+        self.angle -= 3
+        value = self.getAhead()
+        self.angle += 3
+        return value
+
+    behind = property(getBehind)
+
+    def getAngle(self):
+        if self._direction != None:
+            return self._direction % 6
+        else:
+            return None
+        
+    def setAngle(self, value):
+        if value != None:
+            self._direction = value % 6
+        else:
+            self._direction = None
+            
+    angle = property(getAngle, setAngle)
 
 class Bit(object):
     world = None
@@ -98,6 +150,13 @@ class Bit(object):
                 __class__.lister[self.name] = [self]
         else:
             self.destroyed = True
+
+        self.vector = Vector(self, 0)
+
+    def moveForward(self):
+        return self.moveto(self.vector.ahead)
+    def moveBackward(self):
+        return self.moveto(self.vector.behind)
 
     def getlist(self, name):
         return __class__.lister[name]
@@ -174,9 +233,12 @@ class World(object):
 
     def addBit(self, bit):
         if bit not in self.bits and not isBitHere(bit.x, bit.y):
-            self.bits.append(bit)
-            self.bitPositions[bit.x][bit.y] = bit
-            return True
+            try:
+                self.bitPositions[bit.x][bit.y] = bit
+                self.bits.append(bit)
+                return True
+            except:
+                return False
         else:
             return False
             

@@ -388,31 +388,20 @@ class Ribosome(life.Bit):
         self.rna = rna
         self.rnaFrame = 0
         self.nutrition = nutrition
-        self.heading = random.randrange(6)
+        
+        self.vector.angle = random.randrange(6)
 
         self.rnaShort = ""
         for char in self.rna:
             if char != 'y':
                 self.rnaShort += char
 
-        print(self.rnaShort)
-
         self.frustration = 0
 
         self.previousFlesh = None
-
-    def turn(self, vec):
-        self.heading += vec
-        self.heading %= 6
-
-    def moveAhead(self):
-        return self.move(life.headingVector(self, self.heading))
-    def moveBack(self):
-        return self.move(life.headingVector(self, life.headingVectorReverse(self.heading)))
     
     def getFleshPos(self):
-        fleshpos = life.headingVector(self, life.headingVectorReverse(self.heading))
-        fleshpos = (fleshpos[0]+self.x, fleshpos[1]+self.y)
+        fleshpos = self.vector.behind
         return fleshpos
 
     def placeNewFlesh(self, fleshpos):
@@ -432,7 +421,8 @@ class Ribosome(life.Bit):
             
         if codon is 'f':
             if self.nutrition > 0:
-                if self.moveAhead():
+                
+                if self.moveForward():
                     
                     fleshpos = self.getFleshPos()
                     
@@ -445,15 +435,14 @@ class Ribosome(life.Bit):
                 else:
                     self.frustration += 1
                     if self.frustration >= 10:
-                        self.turn(1)
+                        self.vector.turnRight()
                         
         elif codon is 'r':
-            self.turn(1)
+            self.vector.turnRight()
             self.nextCodon()
             
         elif codon is 'l':
-            self.turn(-1)
-            self.heading %= 6
+            self.vector.turnLeft()
             self.nextCodon()
             
         elif codon is 'q':
@@ -473,7 +462,8 @@ class Ribosome(life.Bit):
                             finalFlesh.attach(abit)
 
                 if not self.destroyed:
-                    if self.moveAhead():
+                    
+                    if self.moveForward():
                         abits = life.getAdjacentBits(self)
                         fleshes = 0
                         for abit in abits:
@@ -484,10 +474,10 @@ class Ribosome(life.Bit):
                         if fleshes:
                             self.placeNewFlesh(self.getFleshPos())
                         else:
-                            self.moveBack()
-                            self.turn(1)
+                            self.moveBackward()
+                            self.vector.turnRight()
                     else:
-                        self.turn(1)
+                        self.vector.turnRight()
             
             
         else:
