@@ -287,16 +287,19 @@ class Nucleolus(life.Bit):
     def __init__(self, x, y):
         super().__init__(x,y)
 
+        self.nucleus = None
+
     def sendHormone(self, name):
         for adjtile in self.getAdjValids():
             eval("bits." + name + "(*adjtile)")
 
     def detectSignatureBit(self, signatureBit):
         codeName = signatureBit.name.replace("Signature", "")
-        if codeName in self.nucleus.signaturesDetected:
-            self.nucleus.signaturesDetected[codeName] += 1
-        else:
-            self.nucleus.signaturesDetected[codeName] = 1
+        if self.nucleus:
+            if codeName in self.nucleus.signaturesDetected:
+                self.nucleus.signaturesDetected[codeName] += 1
+            else:
+                self.nucleus.signaturesDetected[codeName] = 1
 
     def tick(self):
         if self.lookout("SignatureGrowthTissueDecay", 7):
@@ -313,6 +316,7 @@ class Nucleus(life.Bit):
 
         for nuc in self.nucleoli:
             nuc.nucleus = self
+            print("SHARED NUCLEOLUS MEMORY ENGAGED")
 
         self.actionConfirmed = 0
 
@@ -401,9 +405,6 @@ class Nucleus(life.Bit):
         return self.signaturesDetected[name]
 
     def tick(self):
-        for bit in self.lookout("CellularGoo", 15):
-            if bit.delay <= -200:
-                bit.destroy()
         if not self.done:
             if not self.waiting:
                 self.doNextAction()

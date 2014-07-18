@@ -31,7 +31,7 @@ def runGraphics():
 
     life.Bit.world = world
 
-    random.seed(0)
+    random.seed(100)
 
     dna = """
 /w 100 /s if(self.signature('GrowthTissueDecay')>=10):self.goto('A'); /hCytoDissolve /q
@@ -42,17 +42,15 @@ def runGraphics():
           'c' + 'c' + 'y'*50 + 'c' + 'y'*50 + 'c' + 'y'*400 + 'q' + \
           'd'*10 + dna
 
-##
-##    bits.Ribosome(90, 35, rna, 0)
-##    
+
+    bits.Ribosome(90, 35, rna, 0)
+    
     for i in range(50):
         bits.AminoAcid(random.randrange(60,110), random.randrange(20, 50))
     for i in range(5):
         bits.Oxidizer(random.randrange(world.width), random.randrange(world.height))
     for i in range(1):
         bits.StrongAcid(random.randrange(world.width), random.randrange(world.height))
-
-    bits.Nucleocyte(50, 50, dna)
 
     screen.fill((255,255,255))
 
