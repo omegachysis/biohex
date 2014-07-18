@@ -803,7 +803,7 @@ class Nucleocyte(life.Bit):
         self.energy -= 1
         if self.energy >= 0:
             for adjtile in self.getAdjValids():
-                Nucleolus(adjtile[0], adjtile[1], self.energy)
+                Nucleolus(adjtile[0], adjtile[1])
                 self.destroy()
                 Nucleus(self.x, self.y)
 
