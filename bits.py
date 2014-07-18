@@ -229,7 +229,6 @@ class Cytoplasm(life.Bit):
         oldy = self.y
         self.randomWalk()
         if self.firstWalk:
-            print("BABY STEPS!")
             self.firstWalk = False
             GrowthTissue(oldx, oldy, [], 2)
 
@@ -413,7 +412,7 @@ class Membrane(life.Bit):
             if len(bit.attachments) >= 2:
                 bit.lonely = False
 
-# dna
+# rna
 #---------------
 # f - place GrowthTissue
 # r - turn right
@@ -422,6 +421,9 @@ class Membrane(life.Bit):
 # y - follow alongside GrowthTissueline, placing GrowthTissue along the way.
 #      If lonely GrowthTissue is found, destroy and attach.
 # c - cytoplasm
+# d - add them anywhere to signal the ribosome to dope the growth tissue to
+#    make it flex further
+# g - signal the start of dna genetic code.  make this the last rna letter you use.
 
 class Ribosome(life.Bit):
     name = "Ribosome"
@@ -440,7 +442,7 @@ class Ribosome(life.Bit):
         self.previousGrowthTissue = None
 
     def placeNewGrowthTissue(self, GrowthTissuepos):
-        newGrowthTissue = GrowthTissue(GrowthTissuepos[0], GrowthTissuepos[1], ribosomeDoping=self.rna.count("d."))
+        newGrowthTissue = GrowthTissue(GrowthTissuepos[0], GrowthTissuepos[1], ribosomeDoping=self.rna.count("d"))
         if self.previousGrowthTissue:
             newGrowthTissue.attach(self.previousGrowthTissue)
         self.previousGrowthTissue = newGrowthTissue
@@ -504,13 +506,13 @@ class Ribosome(life.Bit):
                             self.nutrition -= 1
                             self.destroy()
 
-                            finalGrowthTissue = GrowthTissue(self.x, self.y, ribosomeDoping=self.rna.count("d."))
+                            finalGrowthTissue = GrowthTissue(self.x, self.y, ribosomeDoping=self.rna.count("d"))
                             finalGrowthTissue.attach(abit)
 
                             self.moveForward()
                             self.destroy()
 
-                            Spindle(self.x, self.y)
+                            Spindle(self.x, self.y, self.rna)
                             
                             ads = True
                             while self.nutrition > 0 and ads:
@@ -550,7 +552,7 @@ class Ribosome(life.Bit):
 
 class Spindle(life.Bit):
     name = "Spindle"
-    def __init__(self, x, y):
+    def __init__(self, x, y, rna=""):
         super().__init__(x,y)
 
         self.initialDelay = 50
@@ -564,8 +566,10 @@ class Spindle(life.Bit):
         self.looper = life.Looper(self, self.findCytosol, 10)
         self.looper.pause()
 
+        self.rna = rna
+        self.dna = rna[rna.index('g'):]
+
     def findCytosol(self):
-        print("FIND CYTOSOL")
         if self.stagnation >= 20:
             self.randomWalkTowardsType("Cytosol", 10)
         if "Cytosol" in [i.name for i in self.getAdjBits()]:
@@ -576,7 +580,7 @@ class Spindle(life.Bit):
             self.maturingStage += 1
         else:
             self.destroy()
-            Nucleocyte(self.x, self.y)
+            Nucleocyte(self.x, self.y, self.dna)
 
     def tick(self):
         super().tick()
