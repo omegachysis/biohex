@@ -653,19 +653,20 @@ class GrowthTissue(life.Bit):
     def __init__(self, x, y, attachments=[], ribosomeDoping=5):
         super().__init__(x,y)
 
-        self.attachments = list(attachments)
+        if not self.destroyed:
+            self.attachments = list(attachments)
 
-        self.lonely = True
-        
-        self.flexibility = ribosomeDoping
-        self.stagnation = 0
+            self.lonely = True
+            
+            self.flexibility = ribosomeDoping
+            self.stagnation = 0
 
-        self.lifetime = 100
+            self.lifetime = 100
 
-        self.age = 0
+            self.age = 0
 
-        self.spindleActivated = None
-        self.flexingCountdown = 25
+            self.spindleActivated = None
+            self.flexingCountdown = 25
 
     def tick(self):
         self.age += 1
@@ -774,38 +775,105 @@ class GrowthTissue(life.Bit):
             if len(bit.attachments) >= 2:
                 bit.lonely = False
 
+class HormoneWallGrowth(life.Bit):
+    name = "HormoneWallGrowth"
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+    def tick(self):
+        self.randomWalk()
+
 class Nucleolus(life.Bit):
     name = "Nucleolus"
     def __init__(self, x, y):
         super().__init__(x,y)
+
+    def sendHormone(self, name):
+        for adjtile in self.getAdjValids():
+            eval(name + "(*adjtile)")
 
     def tick(self):
         pass
 
 class Nucleus(life.Bit):
     name = "Nucleus"
-    def __init__(self, x, y):
+    def __init__(self, x, y, nucleoli=[], dna=""):
         super().__init__(x,y)
 
+        self.nucleoli = nucleoli
+
+        for nuc in self.nucleoli:
+            nuc.nucleus = self
+
+        self.actionConfirmed = 0
+
+        self.dna = dna
+        self.dnaFrame = 0
+
+        self.waiting = 0
+        self.done = False
+
+    def readNextAction(self):
+        action = ""
+        reading = False
+        for char in self.dna[self.dnaFrame:]:
+            if char == "/":
+                if not reading:
+                    reading = True
+                else:
+                    break
+            elif char == " ":
+                pass
+            else:
+                if reading:
+                    action += char
+            self.dnaFrame += 1
+        self.dnaFrame -= 1
+        return action
+
+    def doNextAction(self):
+        action = self.readNextAction()
+        print("NEXT ACTION", action)
+        if action[0] == 'w':
+            self.waiting = int(action[1:])
+        elif action[0] == 'h':
+            hormoneName = "Hormone" + action[1:]
+            self.sendHormone(hormoneName)
+        elif action[0] == 'q':
+            self.done = True
+
+    def sendHormone(self, name):
+        self.actionConfirmed = 0
+        for nuc in self.nucleoli:
+            nuc.sendHormone(name)
+
     def tick(self):
-        pass
+        if not self.done:
+            if not self.waiting:
+                self.doNextAction()
+            else:
+                self.waiting -= 1
 
 class Nucleocyte(life.Bit):
     name = "Nucleocyte"
-    def __init__(self, x, y, energy=1):
+    def __init__(self, x, y, dna = ""):
         super().__init__(x,y)
 
         life.Looper(self, self.spread, 20).timer = 20
 
-        self.energy = energy
+        self.energy = 1
+        self.nucleoli = []
+        self.dna = dna
 
     def spread(self):
         self.energy -= 1
         if self.energy >= 0:
             for adjtile in self.getAdjValids():
-                Nucleolus(adjtile[0], adjtile[1])
-                self.destroy()
-                Nucleus(self.x, self.y)
+                self.nucleoli.append(Nucleolus(adjtile[0], adjtile[1]))
+                
+                if not self.destroyed:
+                    self.destroy()
+                    Nucleus(self.x, self.y, self.nucleoli, self.dna)
 
     def tick(self):
         super().tick()
