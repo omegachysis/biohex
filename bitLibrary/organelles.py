@@ -2,6 +2,7 @@
 import life
 import random
 import bits
+import traceback
 
 class Lysosome(life.Bit):
     name = "Lysosome"
@@ -290,8 +291,18 @@ class Nucleolus(life.Bit):
         for adjtile in self.getAdjValids():
             eval("bits." + name + "(*adjtile)")
 
+    def detectSignatureBit(self, signatureBit):
+        codeName = signatureBit.name.replace("Signature", "")
+        if codeName in self.nucleus.signaturesDetected:
+            self.nucleus.signaturesDetected[codeName] += 1
+        else:
+            self.nucleus.signaturesDetected[codeName] = 1
+
     def tick(self):
-        pass
+        if self.lookout("SignatureGrowthTissueDecay", 7):
+            for sbit in self.lookout("SignatureGrowthTissueDecay", 7):
+                sbit.destroy()
+                self.detectSignatureBit(sbit)
 
 class Nucleus(life.Bit):
     name = "Nucleus"
@@ -305,11 +316,32 @@ class Nucleus(life.Bit):
 
         self.actionConfirmed = 0
 
+        self.signaturesDetected = {}
+
+        self.labels = {}
+
         self.dna = dna
         self.dnaFrame = 0
 
         self.waiting = 0
         self.done = False
+
+        dna = dna.replace(" ", "")
+        while True:
+            labelIndex = dna.find('/l')
+            if labelIndex != -1:
+                labelName = ""
+                i = labelIndex
+                while True:
+                    i += 1
+                    if dna[i] != "/":
+                        labelName += dna[i]
+                    else:
+                        break
+                dna = dna[i:]
+                self.labels[labelName[1:]] = labelIndex
+            else:
+                break
 
     def readNextAction(self):
         action = ""
@@ -320,8 +352,12 @@ class Nucleus(life.Bit):
                     reading = True
                 else:
                     break
-            elif char == " ":
+            elif char == " " or char == "\n":
                 pass
+            elif char == "_":
+                action += " "
+            elif char == "@":
+                action += "\n"
             else:
                 if reading:
                     action += char
@@ -329,15 +365,29 @@ class Nucleus(life.Bit):
         self.dnaFrame -= 1
         return action
 
+    def goto(self, labelName):
+        if labelName in self.labels:
+            self.dnaFrame = self.labels[labelName]
+
     def doNextAction(self):
         action = self.readNextAction()
         print("NEXT ACTION", action)
-        if action[0] == 'w':
+        lettercode = action[0]
+        actioncode = action[1:]
+        if lettercode == 'w':
             self.waiting = int(action[1:])
-        elif action[0] == 'h':
+        elif lettercode == 'h':
             hormoneName = "Hormone" + action[1:]
             self.sendHormone(hormoneName)
-        elif action[0] == 'q':
+        elif lettercode == 's':
+            try:
+                exec(actioncode)
+            except:
+                print("DNA SCRIPTING ERROR:")
+                print(traceback.format_exc())
+        elif lettercode == 'l':
+            pass
+        elif lettercode == 'q':
             self.done = True
 
     def sendHormone(self, name):
@@ -345,11 +395,15 @@ class Nucleus(life.Bit):
         for nuc in self.nucleoli:
             nuc.sendHormone(name)
 
+    def signature(self, name):
+        if name not in self.signaturesDetected:
+            self.signaturesDetected[name] = 0
+        return self.signaturesDetected[name]
+
     def tick(self):
         for bit in self.lookout("CellularGoo", 15):
             if bit.delay <= -200:
                 bit.destroy()
-                
         if not self.done:
             if not self.waiting:
                 self.doNextAction()

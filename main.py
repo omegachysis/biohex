@@ -31,15 +31,20 @@ def runGraphics():
 
     life.Bit.world = world
 
-    random.seed(101)
+    random.seed(0)
+
+    dna = """
+/w 100 /s if(self.signature('GrowthTissueDecay')>=10):self.goto('A'); /hCytoDissolve /q
+"""
 
     rna = " " + \
           'f'*15+'r'+'f'*15 + 'r' + 'f'*15 + 'r' + 'f'*15 + 'r' + 'f'*15 + 'r' + 'f'*10 + 'rf' + 'y'*50 + 'c' + \
           'c' + 'c' + 'y'*50 + 'c' + 'y'*50 + 'c' + 'y'*400 + 'q' + \
-          'd'*10 + 'g/w100 /hCytoDissolve /w100 /q'
+          'd'*10 + dna
 
-    bits.Ribosome(90, 35, rna, 0)
-    
+##
+##    bits.Ribosome(90, 35, rna, 0)
+##    
     for i in range(50):
         bits.AminoAcid(random.randrange(60,110), random.randrange(20, 50))
     for i in range(5):
@@ -47,8 +52,7 @@ def runGraphics():
     for i in range(1):
         bits.StrongAcid(random.randrange(world.width), random.randrange(world.height))
 
-    for i in range(200):
-        world.tick()
+    bits.Nucleocyte(50, 50, dna)
 
     screen.fill((255,255,255))
 
@@ -87,7 +91,7 @@ def runConsole():
         bits.StrongAcid(random.randrange(world.width), random.randrange(world.height))
 
     printCounter = 0
-    for i in range(5000):
+    for i in range(1):
         if printCounter == 0:
             printCounter = 50
             print("ITERATION %-5d   BIT COUNT = %-5d" % (i, len(world.bits)))
@@ -97,7 +101,7 @@ def runConsole():
     input()
 
 def main():
-    runConsole()
+    runGraphics()
 
 if __name__ == "__main__":
     try:
