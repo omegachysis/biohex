@@ -27,8 +27,6 @@ class Engine(object):
         pass
 
     def mainloop(self):
-        f = 1
-
         clock = pygame.time.Clock()
         
         while not self.quitting:
@@ -43,7 +41,6 @@ class Engine(object):
                         self.running = not self.running
                     elif event.key == K_SPACE:
                         self.stepping = True
-                        f = 1
                     elif event.key == K_1:
                         self.ticksPerSecond = 10
                     elif event.key == K_2:
@@ -54,16 +51,12 @@ class Engine(object):
                         self.ticksPerSecond = 40
                         
             if self.running or self.stepping:
-                f -= 1
                 
                 self.world.tick()         
 
-                if f == 0:
-                    self.world.drawEmptyUpdates()
-                    self.world.drawDirtyBits()
-                    self.screen.update()
-
-                    f = 1
+                self.world.drawEmptyUpdates()
+                self.world.drawDirtyBits()
+                self.screen.update()
 
                 clock.tick(self.ticksPerSecond)
         

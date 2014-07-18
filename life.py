@@ -89,16 +89,22 @@ class Vector(object):
 
 class Looper(object):
     def __init__(self, bit, command, delay):
-        self.timer = 2
+        self.timer = delay
         self.delay = delay
         self.command = command
         self.bit = bit
         self.bit.addLooper(self)
+        self.start()
+    def pause(self):
+        self.paused = True
+    def start(self):
+        self.paused = False
     def tick(self):
-        self.timer -= 1
-        if self.timer <= 0:
-            self.timer = self.delay
-            self.command()
+        if not self.paused:
+            self.timer -= 1
+            if self.timer <= 0:
+                self.timer = self.delay
+                self.command()
     def stop(self):
         self.bit.removeLooper(self)
 
@@ -127,20 +133,23 @@ class Bit(object):
         self.loopers = []
 
     def randomWalkTowardsType(self, bitName, searchRadius):
-        bit = random.choice(self.lookout(bitName, searchRadius))
-        walkX = random.randrange(3) - 1
-        walkY = random.randrange(3) - 1
-        if self.x < bit.x:
-            walkX = 1
-        else:
-            walkX = -1
+        try:
+            bit = random.choice(self.lookout(bitName, searchRadius))
+            walkX = random.randrange(3) - 1
+            walkY = random.randrange(3) - 1
+            if self.x < bit.x:
+                walkX = 1
+            else:
+                walkX = -1
 
-        if self.y < bit.y:
-            walkY = 1
-        else:
-            walkY = -1
+            if self.y < bit.y:
+                walkY = 1
+            else:
+                walkY = -1
 
-        self.move(walkX, walkY)
+            return self.move(walkX, walkY)
+        except IndexError as e:
+            return False
 
     def randomWalkTowards(self, bit):
         walkX = random.randrange(3) - 1
@@ -155,7 +164,7 @@ class Bit(object):
         else:
             walkY = -1
 
-        self.move(walkX, walkY)
+        return self.move(walkX, walkY)
 
     def lookout(self, bitName, searchRadius):
         return [i for i in self.getList(bitName) if self.distance(i) <= searchRadius]

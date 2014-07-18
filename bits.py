@@ -22,10 +22,23 @@ class Lipid(life.Bit):
     def __init__(self, x, y):
         super().__init__(x,y)
 
-        life.Looper(self, self.randomWalk, 8)
+        life.Looper(self, self.randomWalk, 4)
 
     def tick(self):
         super().tick()
+
+class LipidSalt(life.Bit):
+    name = "LipidSalt"
+    
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+        life.Looper(self, self.randomWalk, 3)
+
+    def tick(self):
+        super().tick()
+
+
 
 class HydratedLipid(life.Bit):
     name = "HydratedLipid"
@@ -142,6 +155,12 @@ class Lysosome(life.Bit):
                 
         for bit in self.lookout("FibrousGrowthTissue", 2):
             bit.destroy()
+            if random.random() < .05:
+                self.destroy()
+        for bit in self.lookout("Necrosis", 3):
+            bit.destroy()
+            if random.random() < .05:
+                self.destroy()
 
 class FibrousGrowthTissue(life.Bit):
     name = "FibrousGrowthTissue"
@@ -166,8 +185,11 @@ class FibrousGrowthTissue(life.Bit):
         elif self.lifetime < 0:
             if self.lookout("MembraneConnective", 2):
                 self.destroy()
-                if random.random() < .10:
-                    Lipid(self.x, self.y)
+                if random.random() < .20:
+                    if random.random() < .50:
+                        Lipid(self.x, self.y)
+                    else:
+                        LipidSalt(self.x, self.y)
 
         for abit in self.getAdjBits():
             if abit.name == "MembraneCell" and abit.lifetime >= 100:
@@ -176,14 +198,58 @@ class FibrousGrowthTissue(life.Bit):
                 if random.random() < .10:
                     Lysosome(self.x, self.y)
 
+        if self.lifetime <= -500:
+            self.destroy()
+            if random.random() < .40:
+                Necrosis(self.x, self.y)
+            else:
+                Lipid(self.x, self.y)
+
 class Cytoplasm(life.Bit):
     name = "Cytoplasm"
 
     def __init__(self, x, y):
         super().__init__(x,y)
 
+        looper = life.Looper(self, self.walk, 3)
+        looper.timer = 20
+
+        self.firstWalk = True
+
+    def release(self):
+        self.destroy()
+        Cytosol(self.x, self.y)
+        for adjtile in self.getAdjValids():
+            Cytosol(*adjtile)
+            for subadjtile in self.getAdjValids(adjtile):
+                Cytosol(*subadjtile)
+
+    def walk(self):
+        oldx = self.x
+        oldy = self.y
+        self.randomWalk()
+        if self.firstWalk:
+            print("BABY STEPS!")
+            self.firstWalk = False
+            GrowthTissue(oldx, oldy, [], 2)
+
     def tick(self):
-        pass
+        super().tick()
+            
+        if self.lookout("Lysosome", 10):
+            self.release()
+
+class Cytosol(life.Bit):
+    name = "Cytosol"
+    
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+        life.Looper(self, self.randomWalk, 7)
+
+    def tick(self):
+        super().tick()
+        
 
 class MembraneDouble(life.Bit):
     name = "MembraneDouble"
@@ -355,6 +421,7 @@ class Membrane(life.Bit):
 # q - destroy
 # y - follow alongside GrowthTissueline, placing GrowthTissue along the way.
 #      If lonely GrowthTissue is found, destroy and attach.
+# c - cytoplasm
 
 class Ribosome(life.Bit):
     name = "Ribosome"
@@ -371,10 +438,6 @@ class Ribosome(life.Bit):
         self.frustration = 0
 
         self.previousGrowthTissue = None
-    
-    def getGrowthTissuePos(self):
-        GrowthTissuepos = self.vector.behind
-        return GrowthTissuepos
 
     def placeNewGrowthTissue(self, GrowthTissuepos):
         newGrowthTissue = GrowthTissue(GrowthTissuepos[0], GrowthTissuepos[1], ribosomeDoping=self.rna.count("d."))
@@ -396,7 +459,7 @@ class Ribosome(life.Bit):
                 
                 if self.moveForward():
                     
-                    GrowthTissuepos = self.getGrowthTissuePos()
+                    GrowthTissuepos = self.vector.behind
                     
                     if not life.getBit(*GrowthTissuepos):
                         self.frustration = 0
@@ -408,6 +471,17 @@ class Ribosome(life.Bit):
                     self.frustration += 1
                     if self.frustration >= 10:
                         self.vector.turnRight()
+
+        elif codon is 'c':
+            if self.moveForward():
+                if not life.getBit(*self.vector.behind):
+                    Cytoplasm(*self.vector.behind)
+                    self.nextCodon()
+                else:
+                    self.frustration += 1
+                    if self.frustration >= 10:
+                        self.vector.turnRight()
+            
                         
         elif codon is 'r':
             self.vector.turnRight()
@@ -457,7 +531,7 @@ class Ribosome(life.Bit):
                         self.nextCodon()
                                 
                         if GrowthTissuees:
-                            self.placeNewGrowthTissue(self.getGrowthTissuePos())
+                            self.placeNewGrowthTissue(self.vector.behind)
                         else:
                             self.moveBackward()
                             #Test(*self.vector.ahead)
@@ -479,33 +553,72 @@ class Spindle(life.Bit):
     def __init__(self, x, y):
         super().__init__(x,y)
 
-    def tick(self):
-        if self.moveForward():
-            abits = self.getAdjBits()
-            GrowthTissuees = 0
-            for abit in abits:
-                if abit.name == "GrowthTissue":
-                    GrowthTissuees += 1
-                    
-            if not GrowthTissuees or "FoldingMatrix" in [i.name for i in abits]:
-                self.moveBackward()
-                self.vector.turnRight()
+        self.initialDelay = 50
 
-            else:
-                FoldingMatrix(*self.vector.behind)
-                for abit in self.getAdjBits(self.vector.behind):
-                    if abit.name == "GrowthTissue":
-                        abit.triggeredFlexing = True
-                    
+        self.stagnation = 0
+        self.frustration = 0
+
+        self.maturing = False
+        self.maturingStage = 0
+
+        self.looper = life.Looper(self, self.findCytosol, 10)
+        self.looper.pause()
+
+    def findCytosol(self):
+        print("FIND CYTOSOL")
+        if self.stagnation >= 20:
+            self.randomWalkTowardsType("Cytosol", 10)
+        if "Cytosol" in [i.name for i in self.getAdjBits()]:
+            self.mature()
+
+    def mature(self):
+        if self.maturingStage < 10:
+            self.maturingStage += 1
         else:
-            self.vector.turnRight()
+            self.destroy()
+            Nucleocyte(self.x, self.y)
+
+    def tick(self):
+        super().tick()
+        
+        self.initialDelay -= 1
+        if self.initialDelay <= 0 and not self.maturing:
+            if self.moveForward():
+                abits = self.getAdjBits()
+                GrowthTissuees = 0
+                for abit in abits:
+                    if abit.name == "GrowthTissue":
+                        GrowthTissuees += 1
+                        
+                if not GrowthTissuees or "FoldingMatrix" in [i.name for i in abits]:
+                    self.moveBackward()
+                    self.vector.turnRight()
+                    self.stagnation += 1
+
+                else:
+                    self.stagnation = 0
+                    self.frustration = 0
+                    FoldingMatrix(*self.vector.behind)
+                    for abit in self.getAdjBits(self.vector.behind):
+                        if abit.name in ["GrowthTissue"]:
+                            abit.spindleActivated = True
+                        
+            else:
+                self.frustration += 1
+                if self.frustration >= 3:
+                    self.stagnation += 1
+                    self.vector.turnRight()
+                    
+        if self.stagnation == 20:
+            self.looper.start()
+            self.maturing = True
 
 class FoldingMatrix(life.Bit):
     name = "FoldingMatrix"
     def __init__(self, x, y):
         super().__init__(x,y)
 
-        self.life = 6
+        self.life = 13
 
     def tick(self):
         if self.life > 0:
@@ -523,6 +636,17 @@ class OrganelleMatrix(life.Bit):
             if adjbit.name == "MembraneCell":
                 adjbit.destroy()
 
+class SignatureGrowthTissueDecay(life.Bit):
+    name = "SignatureGrowthTissueDecay"
+    
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+        life.Looper(self, self.randomWalk, 5)
+        
+    def tick(self):
+        super().tick()
+
 class GrowthTissue(life.Bit):
     name = "GrowthTissue"
     
@@ -538,16 +662,20 @@ class GrowthTissue(life.Bit):
 
         self.lifetime = 100
 
-        self.triggeredFlexing = None
+        self.age = 0
+
+        self.spindleActivated = None
         self.flexingCountdown = 25
 
     def tick(self):
+        self.age += 1
+        
         if self.lonely:
-            if self.triggeredFlexing:
+            if self.spindleActivated:
                 self.destroy()
                 OrganelleMatrix(self.x, self.y)
         else:
-            if self.triggeredFlexing:
+            if self.spindleActivated:
                 self.flexingCountdown -= 1
                 if self.flexingCountdown <= 0:
                     if self.flexibility >= 0:
@@ -559,6 +687,13 @@ class GrowthTissue(life.Bit):
             if self.lifetime < self.stagnation:
                 self.destroy()
                 OrganelleMatrix(self.x, self.y)
+
+        if self.age > 1000:
+            self.destroy()
+            if random.random() < .80:
+                Necrosis(self.x, self.y)
+            else:
+                SignatureGrowthTissueDecay(self.x, self.y)
 
     def pullflex(self):
         ads = self.getAdjValids()
@@ -638,4 +773,39 @@ class GrowthTissue(life.Bit):
                 self.lonely = False
             if len(bit.attachments) >= 2:
                 bit.lonely = False
-        
+
+class Nucleolus(life.Bit):
+    name = "Nucleolus"
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+    def tick(self):
+        pass
+
+class Nucleus(life.Bit):
+    name = "Nucleus"
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+    def tick(self):
+        pass
+
+class Nucleocyte(life.Bit):
+    name = "Nucleocyte"
+    def __init__(self, x, y, energy=1):
+        super().__init__(x,y)
+
+        life.Looper(self, self.spread, 20).timer = 20
+
+        self.energy = energy
+
+    def spread(self):
+        self.energy -= 1
+        if self.energy >= 0:
+            for adjtile in self.getAdjValids():
+                Nucleolus(adjtile[0], adjtile[1], self.energy)
+                self.destroy()
+                Nucleus(self.x, self.y)
+
+    def tick(self):
+        super().tick()

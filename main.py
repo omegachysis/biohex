@@ -11,30 +11,41 @@ import random
 pygame.init()
 
 def main():
+    METRIC_WIDTH = 10
+    METRIC_HEIGHT = 10
+    METRIC_T = 3
+    
     hexmech.setMetrics(
         width = 10, height = 10, t = 3)
 
-    screen = graphics.Screen(1280, 720, fullscreen = True)
-    world = graphics.World(screen, 180, 70)
+    RES_WIDTH = 1920
+    RES_HEIGHT = 1080
+
+    WORLD_WIDTH = int(RES_WIDTH / (METRIC_WIDTH / 2))
+    WORLD_HEIGHT = RES_HEIGHT // METRIC_HEIGHT
+
+    screen = graphics.Screen(RES_WIDTH, RES_HEIGHT, fullscreen = False)
+    world = graphics.World(screen, WORLD_WIDTH, WORLD_HEIGHT)
 
     engine = graphics.Engine(screen, world, ticksPerSecond = 10)
 
     life.Bit.world = world
 
-    random.seed(6)
+    random.seed(101)
 
     rna = " " + \
-          'f'*8 +'r'+'f'*25+'r'+'f'*20 + 'r' + 'f'*20 + 'rf' + 'y'*500 + 'q' + \
-          'd.'*15
+          'f'*15+'r'+'f'*15 + 'r' + 'f'*15 + 'r' + 'f'*15 + 'r' + 'f'*15 + 'r' + 'f'*10 + 'rf' + 'y'*50 + 'c' + \
+          'c' + 'c' + 'y'*50 + 'c' + 'y'*50 + 'c' + 'y'*400 + 'q' + \
+          'd.'*10
 
     bits.Ribosome(90, 35, rna, 0)
     
     for i in range(35):
         bits.NutrientAminoAcid(random.randrange(60,110), random.randrange(20, 50))
-    for i in range(5):
-        bits.Oxidizer(random.randrange(world.width), random.randrange(world.height))
-    for i in range(1):
-        bits.StrongAcid(random.randrange(world.width), random.randrange(world.height))
+##    for i in range(5):
+##        bits.Oxidizer(random.randrange(world.width), random.randrange(world.height))
+##    for i in range(1):
+##        bits.StrongAcid(random.randrange(world.width), random.randrange(world.height))
 
     screen.fill((255,255,255))
 
