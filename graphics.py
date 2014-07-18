@@ -28,6 +28,8 @@ class Engine(object):
 
     def mainloop(self):
         clock = pygame.time.Clock()
+
+        self.screen.update()
         
         while not self.quitting:
             self.stepping = False
@@ -91,14 +93,23 @@ class World(life.World):
 
         self.screen = screen
 
-        self._emptyBit = pygame.image.load("bits/_empty.png").convert()
+        self._emptyBit = pygame.image.load("bitGraphics/_empty.png").convert()
         self._emptyBit.set_colorkey((255,255,255))
 
     def _loadBitSurfaces(self):
         for bitName in life.bitList:
-            surface = pygame.image.load("bits/" + bitName + ".png").convert()
+            surface = pygame.image.load("bitGraphics/" + bitName + ".png").convert()
             surface.set_colorkey((255,255,255))
             self._bitSurfaces[bitName] = surface
+
+    def flush(self):
+        self.drawEmptyGrid()
+        
+        for bit in self.bits:
+            self.drawBit(bit)
+
+        self.updatePositions = []
+        self.dirtyBits = []
 
     def drawBit(self, bit):
         self.screen.blit(self._bitSurfaces[bit.name], hexmech.coordsToPixels(bit.x, bit.y))

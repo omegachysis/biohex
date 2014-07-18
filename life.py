@@ -7,7 +7,7 @@ from os import path
 import math
 
 bitList = []
-for file in glob.glob("bits/*.png"):
+for file in glob.glob("bitGraphics/*.png"):
     bitList.append(path.basename(file)[:-4])
 
 def getBit(x, y):
@@ -28,7 +28,8 @@ class Vector(object):
         self._ahead = None
 
     def reverse(self):
-        self.angle -= 3
+        if self.angle != None:
+            self.angle -= 3
     def turnLeft(self, units=1):
         self.angle -= units
     def turnRight(self, units=1):
@@ -61,7 +62,7 @@ class Vector(object):
             self._direction = setEven.index(value)
         else:
             self._direction = None
-            self._ahead = (self.x + value[0], self.y + value[1])
+            self._ahead = (self.bit.x + value[0], self.bit.y + value[1])
 
     ahead = property(getAhead, setAhead)
 
@@ -304,9 +305,15 @@ class World(object):
 
         Bit.world = self
 
-    def markDirty(self, bit): None
-    def unmarkDirty(self, bit): None
-    def markUpdate(self, x, y): None
+    def save(self, filename):
+        import pickle
+        for bit in self.bits:
+            
+
+    def markDirty(self, bit): pass
+    def unmarkDirty(self, bit): pass
+    def markUpdate(self, x, y): pass
+    def flush(self): pass
     
     #def drawEmpty(self, pos): None
 
