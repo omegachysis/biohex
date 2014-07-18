@@ -27,6 +27,9 @@ class Vector(object):
         self._direction = direction
         self._ahead = None
 
+    def __serialize__(self):
+        return (self._direction, self._ahead)
+
     def reverse(self):
         if self.angle != None:
             self.angle -= 3
@@ -96,6 +99,12 @@ class Looper(object):
         self.bit = bit
         self.bit.addLooper(self)
         self.start()
+        
+    def __serialize__(self):
+        # NOTE: THIS MEANS COMMANDS CAN ONLY BE DERIVED FROM THE CURRENT BIT!
+        serializedCommand = self.command.__name__
+        return (self.timer, self.delay, serializedCommand, self.paused)
+    
     def pause(self):
         self.paused = True
     def start(self):
@@ -108,6 +117,21 @@ class Looper(object):
                 self.command()
     def stop(self):
         self.bit.removeLooper(self)
+
+def loadSavedBit(self, pickledBit, index):
+    newBit = Bit(pickledBit['x'], pickledBit['y'])
+    for variableName, value in pickledBit.items():
+        if variableName != "index":
+            eval("newBit.{} = {}".format(variableName, value))
+    for pickledLooper in newBit.loopers:
+        looperCommand = eval("newBit." + pickledLooper[2])
+        newLooper = Looper(newBit, looperCommand, pickledLooper[1])
+        newLooper.timer = pickledLooper[0]
+        newLooper.paused = pickledLooper[3]
+
+    pickledVector = newBit.vector
+    newBit.vector = Vector(newBit, pickledVector[0])
+    newBit._ahead = pickledVector[1]
 
 class Bit(object):
     world = None
@@ -132,6 +156,33 @@ class Bit(object):
         self.vector = Vector(self, 0)
 
         self.loopers = []
+
+    def getIndex(self):
+        if self in self.world.bits:
+            return self.world.bits.index(self)
+        else:
+            return None
+    def setIndex(self, newIndex):
+        pass
+    index = property(getIndex)
+
+    def makePickle(self):
+        data = {}
+        
+        for key, value in vars(self).items():
+            
+            if key == "vector":
+                value = value.__serialize__()
+                
+            elif isinstance(value, Bit):
+                value = value.getIndex()
+                
+            elif key == "loopers":
+                value = [i.__serialize__() for i in value]
+
+            data[key] = value
+
+        return data
 
     def randomWalkTowardsType(self, bitName, searchRadius):
         try:
@@ -307,8 +358,21 @@ class World(object):
 
     def save(self, filename):
         import pickle
+        file = open(filename, 'wb')
+        pickledBits = []
         for bit in self.bits:
-            
+            pickledBits.append(bit.makePickle())
+        pickle.dump(pickledBits, file)
+        file.close()
+
+    def load(self, filename):
+        import pickle
+        file = open(filename, 'rb')
+        pickledBits = pickle.load(file)
+        index = 0
+        for pickle in pickledBits:
+            loadSavedBit(pickle, index)
+            index += 1
 
     def markDirty(self, bit): pass
     def unmarkDirty(self, bit): pass
