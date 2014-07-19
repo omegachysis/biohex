@@ -20,16 +20,19 @@ def runGraphics():
     hexmech.setMetrics(
         width = 10, height = 10, t = 3)
 
-    RES_WIDTH = 1920
-    RES_HEIGHT = 1080
+    RES_WIDTH = 1280
+    RES_HEIGHT = 720
 
-    WORLD_WIDTH = 300
-    WORLD_HEIGHT = 300
+    WORLD_WIDTH = 400
+    WORLD_HEIGHT = 200
+    
+    FULLSCREEN = False
 
     CANVAS_WIDTH = WORLD_WIDTH * (METRIC_WIDTH+METRIC_T*2) / 2
     CANVAS_HEIGHT = WORLD_HEIGHT * METRIC_HEIGHT
 
-    screen = graphics.Screen(RES_WIDTH, RES_HEIGHT, canvasSize = (CANVAS_WIDTH, CANVAS_HEIGHT), fullscreen = True)
+    screen = graphics.Screen(RES_WIDTH, RES_HEIGHT,
+                             canvasSize = (CANVAS_WIDTH, CANVAS_HEIGHT), fullscreen = FULLSCREEN)
     world = graphics.World(screen, WORLD_WIDTH, WORLD_HEIGHT, passErrors = True)
 
     engine = graphics.Engine(screen, world, ticksPerSecond = 10)
