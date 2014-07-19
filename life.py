@@ -137,8 +137,15 @@ class Bit(object):
     world = None
     name = "Test"
     lister = {}
+
+    ENTHALPY = 0
+    ENTROPY = 0
     
     def __init__(self, x, y):
+        self.name = self.__class__.__name__
+
+        self.enthalpy = self.ENTHALPY
+        
         self.x = x
         self.y = y
         placed = self.world.addBit(self)
@@ -156,6 +163,15 @@ class Bit(object):
         self.vector = Vector(self, 0)
 
         self.loopers = []
+
+    def enthalpyZero(self): pass
+    def enthalpyLooper(self, delay=100):
+        self.enthalpyLooper = Looper(self, self.enthalpyReduce, delay)
+    def enthalpyReduce(self):
+        self.enthalpy -= 1
+        if self.enthalpy == 0:
+            self.enthalpyZero()
+        self.enthalpyLooper.stop()
 
     def getIndex(self):
         if self in self.world.bits:

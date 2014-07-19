@@ -24,14 +24,21 @@ def runGraphics():
     WORLD_WIDTH = int(RES_WIDTH / (METRIC_WIDTH / 2))
     WORLD_HEIGHT = RES_HEIGHT // METRIC_HEIGHT
 
-    screen = graphics.Screen(RES_WIDTH, RES_HEIGHT, fullscreen = False)
+    screen = graphics.Screen(RES_WIDTH, RES_HEIGHT, fullscreen = True)
     world = graphics.World(screen, WORLD_WIDTH, WORLD_HEIGHT)
 
     engine = graphics.Engine(screen, world, ticksPerSecond = 10)
 
     life.Bit.world = world
 
-    random.seed(100)
+    random.seed(0)
+
+    for i in range(50):
+        bits.AminoAcid(random.randrange(WORLD_WIDTH),
+                       random.randrange(WORLD_HEIGHT))
+    for i in range(50):
+        bits.Water(random.randrange(WORLD_WIDTH),
+                       random.randrange(WORLD_HEIGHT))
 
     dna = """
 /w 100 /s if(self.signature('GrowthTissueDecay')>=10):self.goto('A'); /hCytoDissolve /q
@@ -41,8 +48,6 @@ def runGraphics():
           'f'*15+'r'+'f'*15 + 'r' + 'f'*15 + 'r' + 'f'*15 + 'r' + 'f'*15 + 'r' + 'f'*10 + 'rf' + 'y'*50 + 'c' + \
           'c' + 'c' + 'y'*50 + 'c' + 'y'*50 + 'c' + 'y'*400 + 'q' + \
           'd'*10 + dna
-
-    
 
     screen.fill((255,255,255))
 

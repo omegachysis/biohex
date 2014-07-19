@@ -3,25 +3,22 @@ import life
 import bits
 
 class AminoAcid(life.Bit):
-    ATOM1 = 7
-    ATOM2 = 2
-    ATOM3 = 6
+    """ Used as a building block for life. """
+    atoms = [7,6,2]
 
-    ENTROPY = 1
+    ENTROPY = 3
     ENTHALPY = 3
     
     def __init__(self, x, y):
         super().__init__(x,y)
 
     def tick(self):
-        pass
+        self.randomWalk()
 
 class Water(life.Bit):
-    ATOM1 = 1
-    ATOM2 = 1
-    ATOM3 = 0
+    atoms = [1,1,0]
 
-    ENTROPY = 3
+    ENTROPY = 5
     ENTHALPY = 0
 
     def __init__(self, x, y):
@@ -29,3 +26,18 @@ class Water(life.Bit):
 
     def tick(self):
         self.randomWalk()
+
+class Necrosis(life.Bit):
+    atoms = [0,0,0]
+
+    ENTROPY = 4
+    ENTHALPY = 0
+
+    def __init__(self, x, y, atoms):
+        super().__init__(x,y)
+
+        life.Looper(self, self.randomWalk, 5)
+
+    def tick(self):
+        super().tick()
+    
