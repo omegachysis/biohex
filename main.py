@@ -23,10 +23,13 @@ def runGraphics():
     RES_WIDTH = 1920
     RES_HEIGHT = 1080
 
-    WORLD_WIDTH = int(RES_WIDTH / (METRIC_WIDTH / 2))
-    WORLD_HEIGHT = RES_HEIGHT // METRIC_HEIGHT
+    WORLD_WIDTH = 300
+    WORLD_HEIGHT = 300
 
-    screen = graphics.Screen(RES_WIDTH, RES_HEIGHT, fullscreen = False)
+    CANVAS_WIDTH = WORLD_WIDTH * (METRIC_WIDTH+METRIC_T*2) / 2
+    CANVAS_HEIGHT = WORLD_HEIGHT * METRIC_HEIGHT
+
+    screen = graphics.Screen(RES_WIDTH, RES_HEIGHT, canvasSize = (CANVAS_WIDTH, CANVAS_HEIGHT), fullscreen = True)
     world = graphics.World(screen, WORLD_WIDTH, WORLD_HEIGHT, passErrors = True)
 
     engine = graphics.Engine(screen, world, ticksPerSecond = 10)
@@ -35,17 +38,17 @@ def runGraphics():
 
     random.seed(0)
 
-    RNA = "Ammmmmmmmmmm"
+    RNA = "AmmmmmmmmmmmmmmQ"
 
     DNA = bitLibrary.functions._convertRNA(RNA)
     print("DNA: ", DNA)
 
     bits.Ribosome(WORLD_WIDTH//2, WORLD_HEIGHT//2, DNA)
 
-    for i in range(50):
+    for i in range(150):
         bits.AminoAcid(random.randrange(WORLD_WIDTH),
                        random.randrange(WORLD_HEIGHT))
-    for i in range(50):
+    for i in range(150):
         bits.Water(random.randrange(WORLD_WIDTH),
                        random.randrange(WORLD_HEIGHT))
 
@@ -60,7 +63,6 @@ def runGraphics():
 
     screen.fill((255,255,255))
 
-    world.flush()
     engine.start()
 
 def runConsole():

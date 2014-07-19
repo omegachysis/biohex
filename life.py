@@ -168,7 +168,9 @@ class Bit(object):
 
     def die(self):
         self.destroy()
-        bits.Necrosis(self.x, self.y, self.atoms)
+        newBit = bits.Necrosis(self.x, self.y, self.atoms)
+        newBit.enthalpy = self.enthalpy
+        
     def dieError(self):
         self.destroy()
         bits.CausticNecrosis(self.x, self.y, self.atoms)

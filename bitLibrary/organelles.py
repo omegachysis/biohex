@@ -30,8 +30,6 @@ class Ribosome(life.Bit):
         self.die()
 
     def makeBit(self, bitclass, pos, args={}):
-        print(bitclass.atoms)
-        print(self.atoms)
         if len([i for i in range(len(self.atoms)) if \
                 self.atoms[i] >= bitclass.atoms[i]]) == len(self.atoms):
             for i in range(len(self.atoms)):
@@ -45,9 +43,13 @@ class Ribosome(life.Bit):
     def tick(self):
         codon = self.rna[self.frame]
         
-        if self.codeType == "A":
+        if self.codeType == 'A':
             if codon == 'm':
                 if self.moveto(self.vector.ahead):
                     self.makeBit(bits.ProteinCellMembrane, self.vector.behind)
+            elif codon == 'Q':
+                self.die()
+            else:
+                self.frame += 1
         
         self.frame += 1
