@@ -24,30 +24,19 @@ class Ribosome(life.Bit):
 
         self.vector.heading = random.randrange(6)
 
-        self.enthalpyLooper(100)
-
-    def enthalpyZero(self):
-        self.die()
-
-    def makeBit(self, bitclass, pos, args={}):
-        if len([i for i in range(len(self.atoms)) if \
-                self.atoms[i] >= bitclass.atoms[i]]) == len(self.atoms):
-            for i in range(len(self.atoms)):
-                self.atoms[i] -= bitclass.atoms[i]
-
-            return bitclass(pos[0], pos[1], **args)
-
-        else:
-            return None
+        self.startEnthalpy(100)
 
     def tick(self):
+        super().tick()
+        
         codon = self.rna[self.frame]
         
-        if self.codeType == 'A':
-            if codon == 'm':
+        if self.codeType == 'A':    # TAAT
+            if codon == 'm':        # TCGT
                 if self.moveto(self.vector.ahead):
                     self.makeBit(bits.ProteinCellMembrane, self.vector.behind)
-            elif codon == 'Q':
+                    
+            elif codon == 'Q':      # TTAT
                 self.die()
             else:
                 self.frame += 1

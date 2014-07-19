@@ -7,6 +7,7 @@ from os import path
 import bits
 
 import math
+import traceback
 
 bitList = []
 for file in glob.glob("bitGraphics/*.png"):
@@ -175,14 +176,33 @@ class Bit(object):
         self.destroy()
         bits.CausticNecrosis(self.x, self.y, self.atoms)
 
-    def enthalpyZero(self): pass
-    def enthalpyLooper(self, delay=100):
-        self.enthalpyLooper = Looper(self, self.enthalpyReduce, delay)
-    def enthalpyReduce(self):
+    def makeBit(self, bitclass, pos, args={}, enthalpy=None):
+        if enthalpy == None:
+            enthalpy = bitclass.ENTHALPY
+        if len([i for i in range(len(self.atoms)) if \
+                self.atoms[i] >= bitclass.atoms[i]]) == len(self.atoms) and \
+                enthalpy <= self.enthalpy and \
+                not getBit(*pos):
+            for i in range(len(self.atoms)):
+                self.atoms[i] -= bitclass.atoms[i]
+            self.enthalpy -= enthalpy
+
+            return bitclass(pos[0], pos[1], **args)
+
+        else:
+            return None
+
+    def enthalpyDeath(self):
+        self.die()
+
+    def startEnthalpy(self, multiplier=10):
+        self.enthalpyLooper = Looper(self, self.enthalpyProgress, multiplier)
+
+    def enthalpyProgress(self):
         self.enthalpy -= 1
         if self.enthalpy == 0:
-            self.enthalpyZero()
-        self.enthalpyLooper.stop()
+            self.enthalpyDeath()
+            self.enthalpyLooper.stop()
 
     def getIndex(self):
         if self in self.world.bits:
@@ -385,6 +405,8 @@ class World(object):
 
         Bit.world = self
 
+        self.tickNumber = 0
+
     def getPassingErrors(self):
         return self._passingErrors
     def setPassingErrors(self, value):
@@ -443,13 +465,19 @@ class World(object):
             self.bitPositions[bit.x][bit.y] = 0
 
     def tickPassErrors(self):
+        self.tickNumber += 1
         for bit in self.bits:
             try:
                 bit.tick()
             except:
+                print("----------------------------")
+                print(self), " DIED BY FATAL ERROR:"
+                print(traceback.format_exc())
+                print("----------------------------\n")
                 bit.dieError()
                 
     def tickNonPassErrors(self):
+        self.tickNumber += 1
         for bit in self.bits:
             bit.tick()
 

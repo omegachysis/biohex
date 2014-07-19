@@ -84,8 +84,7 @@ class Engine(object):
                                         self.quitting = True
                                     elif event.type == KEYDOWN:
                                         if event.key == K_ESCAPE or event.key == K_p:
-                                            self.rendering = True
-                                            
+                                            self.rendering = True      
                             self.world.flush()
                             self.rendering = True
                                         
