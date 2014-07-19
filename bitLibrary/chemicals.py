@@ -43,3 +43,18 @@ class Necrosis(life.Bit):
     def tick(self):
         super().tick()
     
+class CausticNecrosis(life.Bit):
+    atoms = [0,0,0]
+
+    ENTROPY = 10
+    ENTHALPY = 0
+
+    def __init__(self, x, y, atoms):
+        super().__init__(x,y)
+
+        self.atoms = list(atoms)
+
+        life.Looper(self, self.randomWalk, 5)
+
+    def tick(self):
+        super().tick()

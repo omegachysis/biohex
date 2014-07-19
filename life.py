@@ -4,6 +4,8 @@ import hexmech
 import glob
 from os import path
 
+import bits
+
 import math
 
 bitList = []
@@ -163,6 +165,13 @@ class Bit(object):
         self.vector = Vector(self, 0)
 
         self.loopers = []
+
+    def die(self):
+        self.destroy()
+        bits.Necrosis(self.x, self.y, self.atoms)
+    def dieError(self):
+        self.destroy()
+        bits.CausticNecrosis(self.x, self.y, self.atoms)
 
     def enthalpyZero(self): pass
     def enthalpyLooper(self, delay=100):
@@ -354,7 +363,7 @@ class Bit(object):
         return self.moveto((self.x + dx, self.y + dy))
 
 class World(object):
-    def __init__(self, width, height):
+    def __init__(self, width, height, passErrors = False):
         self.width = width
         self.height = height
 
@@ -370,7 +379,19 @@ class World(object):
 
         self.updatePositions = []
 
+        self.passingErrors = passErrors
+
         Bit.world = self
+
+    def getPassingErrors(self):
+        return self._passingErrors
+    def setPassingErrors(self, value):
+        self._passingErrors = value
+        if value:
+            self.tick = self.tickPassErrors
+        else:
+            self.tick = self.tickNonPassErrors
+    passingErrors = property(getPassingErrors, setPassingErrors)
 
     def save(self, filename):
         import pickle
@@ -419,6 +440,15 @@ class World(object):
             #self.drawEmpty((bit.x, bit.y))
             self.bitPositions[bit.x][bit.y] = 0
 
-    def tick(self):
+    def tickPassErrors(self):
+        for bit in self.bits:
+            try:
+                bit.tick()
+            except:
+                bit.dieError()
+                
+    def tickNonPassErrors(self):
         for bit in self.bits:
             bit.tick()
+
+    def tick(self): pass

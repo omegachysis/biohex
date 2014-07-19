@@ -27,7 +27,7 @@ def runGraphics():
     WORLD_HEIGHT = RES_HEIGHT // METRIC_HEIGHT
 
     screen = graphics.Screen(RES_WIDTH, RES_HEIGHT, fullscreen = False)
-    world = graphics.World(screen, WORLD_WIDTH, WORLD_HEIGHT)
+    world = graphics.World(screen, WORLD_WIDTH, WORLD_HEIGHT, passErrors = True)
 
     engine = graphics.Engine(screen, world, ticksPerSecond = 10)
 

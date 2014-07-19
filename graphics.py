@@ -93,8 +93,8 @@ class Screen(object):
         pygame.display.flip()
 
 class World(life.World):
-    def __init__(self, screen, width, height):
-        super().__init__(width, height)
+    def __init__(self, screen, width, height, passErrors=False):
+        super().__init__(width, height, passErrors)
 
         self._bitSurfaces = {}
         self._loadBitSurfaces()

@@ -27,21 +27,20 @@ class Ribosome(life.Bit):
         self.enthalpyLooper(100)
 
     def enthalpyZero(self):
-        self.destroy()
-        bits.Necrosis(self.x, self.y, self.atoms)
+        self.die()
 
     def makeBit(self, bitclass, pos, args={}):
-        if len([i for i in self.atoms if \
+        print(bitclass.atoms)
+        print(self.atoms)
+        if len([i for i in range(len(self.atoms)) if \
                 self.atoms[i] >= bitclass.atoms[i]]) == len(self.atoms):
             for i in range(len(self.atoms)):
-                self.atoms[i] -= bitclass.atoms[I]
+                self.atoms[i] -= bitclass.atoms[i]
 
             return bitclass(pos[0], pos[1], **args)
 
         else:
             return None
-
-
 
     def tick(self):
         codon = self.rna[self.frame]
