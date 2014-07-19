@@ -1,6 +1,7 @@
 
 import life
 import bits
+import random
 
 class Ribosome(life.Bit):
     """ Turns genetic code and raw materials into proteins. """
@@ -15,18 +16,18 @@ class Ribosome(life.Bit):
 
         # keep a storage available of atoms to use
         # to build the organisms parts
-        self.ATOMS = list(Ribosome.atoms)
+        self.atoms = list(Ribosome.atoms)
 
-        self.codeType = rna[0]
+        self.rna = bits.functions._convertDNA(dna)
+        self.codeType = self.rna[0]
         self.frame = 1
-
-        self.rna = convertDNA(dna)
 
         self.vector.heading = random.randrange(6)
 
         self.enthalpyLooper(100)
 
     def enthalpyZero(self):
+        self.destroy()
         bits.Necrosis(self.x, self.y, self.atoms)
 
     def makeBit(self, bitclass, pos, args={}):
@@ -40,46 +41,7 @@ class Ribosome(life.Bit):
         else:
             return None
 
-    def _nucleotidesToNumerals(self, nucleotides):
-        nums = []
-        for nuc in nucleotides:
-            nums.append(('a','t','c','g').index(nuc.lower()))
-        return nums
-    
-    def _baseFourToChar(self, nums):
-        val = 0
-        nums.reverse()
-        for i in range(4):
-            val += int(nums[i]) * ( 4 ** i)
-        return chr(val)
-    
-    def _charToBaseFour(self, char):
-        val = ord(char)
-        nums = []
-        for i in list(range(4)).__reversed__():
-            divides = val // (4 ** i)
-            val -= divides * (4 ** i)
-            nums.append(divides)
-        return nums
 
-    def convertDNA(self, dna):
-        nums = self._nucleotidesToNumerals(dna)
-        rna = ""
-        frame = []
-        FRAME_WIDTH = 4
-        for num in nums:
-            frame.append(num)
-            if len(frame) == FRAME_WIDTH:
-                rna += self._baseFourToChar(frame)
-                frame = []
-        return rna
-
-    def convertRNA(self, rna):
-        dna = ""
-        for char in rna:
-            for num in self._charToBaseFour(char):
-                dna += "ATCG"[num]
-        return dna
 
     def tick(self):
         codon = self.rna[self.frame]

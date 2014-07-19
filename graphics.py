@@ -9,6 +9,8 @@ import hexmech
 import life
 import bits
 
+import experiment
+
 pygame.init()
 
 class Engine(object):
@@ -51,6 +53,12 @@ class Engine(object):
                         self.ticksPerSecond = 30
                     elif event.key == K_4:
                         self.ticksPerSecond = 40
+                    elif event.key == K_a:
+                        print("ATOMS IN EXPERIMENT: ", experiment.probeAtoms(self.world))
+                    elif event.key == K_e:
+                        print("ENTHALPY IN EXPERIMENT: ", experiment.probeEnthalpy(self.world))
+                    elif event.key == K_r:
+                        print("ENTROPY IN EXPERIMENT: ", experiment.probeEntropy(self.world))
                         
             if self.running or self.stepping:
                 

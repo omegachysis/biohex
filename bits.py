@@ -12,3 +12,5 @@ from bitLibrary.organelles import *
 from bitLibrary.proteins import *
 ##
 ##from bitLibrary.mods import *
+
+from bitLibrary import functions

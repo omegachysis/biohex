@@ -14,5 +14,9 @@ class ProteinCellMembrane(life.Bit):
 
         self.enthalpyLooper(100)
 
+    def enthalpyZero(self):
+        self.destroy()
+        bits.Necrosis(self.x, self.y, self.atoms)
+
     def tick(self):
         super().tick()

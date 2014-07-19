@@ -8,6 +8,8 @@ import graphics
 import traceback
 import random
 
+import bitLibrary
+
 pygame.init()
 
 def runGraphics():
@@ -24,7 +26,7 @@ def runGraphics():
     WORLD_WIDTH = int(RES_WIDTH / (METRIC_WIDTH / 2))
     WORLD_HEIGHT = RES_HEIGHT // METRIC_HEIGHT
 
-    screen = graphics.Screen(RES_WIDTH, RES_HEIGHT, fullscreen = True)
+    screen = graphics.Screen(RES_WIDTH, RES_HEIGHT, fullscreen = False)
     world = graphics.World(screen, WORLD_WIDTH, WORLD_HEIGHT)
 
     engine = graphics.Engine(screen, world, ticksPerSecond = 10)
@@ -33,6 +35,13 @@ def runGraphics():
 
     random.seed(0)
 
+    RNA = "Ammmmmmmmmmm"
+
+    DNA = bitLibrary.functions._convertRNA(RNA)
+    print("DNA: ", DNA)
+
+    bits.Ribosome(WORLD_WIDTH//2, WORLD_HEIGHT//2, DNA)
+
     for i in range(50):
         bits.AminoAcid(random.randrange(WORLD_WIDTH),
                        random.randrange(WORLD_HEIGHT))
@@ -40,14 +49,14 @@ def runGraphics():
         bits.Water(random.randrange(WORLD_WIDTH),
                        random.randrange(WORLD_HEIGHT))
 
-    dna = """
-/w 100 /s if(self.signature('GrowthTissueDecay')>=10):self.goto('A'); /hCytoDissolve /q
-"""
-
-    rna = " " + \
-          'f'*15+'r'+'f'*15 + 'r' + 'f'*15 + 'r' + 'f'*15 + 'r' + 'f'*15 + 'r' + 'f'*10 + 'rf' + 'y'*50 + 'c' + \
-          'c' + 'c' + 'y'*50 + 'c' + 'y'*50 + 'c' + 'y'*400 + 'q' + \
-          'd'*10 + dna
+##    dna = """
+##/w 100 /s if(self.signature('GrowthTissueDecay')>=10):self.goto('A'); /hCytoDissolve /q
+##"""
+##
+##    rna = " " + \
+##          'f'*15+'r'+'f'*15 + 'r' + 'f'*15 + 'r' + 'f'*15 + 'r' + 'f'*15 + 'r' + 'f'*10 + 'rf' + 'y'*50 + 'c' + \
+##          'c' + 'c' + 'y'*50 + 'c' + 'y'*50 + 'c' + 'y'*400 + 'q' + \
+##          'd'*10 + dna
 
     screen.fill((255,255,255))
 

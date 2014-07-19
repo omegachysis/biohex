@@ -36,6 +36,8 @@ class Necrosis(life.Bit):
     def __init__(self, x, y, atoms):
         super().__init__(x,y)
 
+        self.atoms = list(atoms)
+
         life.Looper(self, self.randomWalk, 5)
 
     def tick(self):
