@@ -2,6 +2,8 @@
 
 import pygame
 from pygame.locals import *
+import pygame.freetype
+
 import random
 import math
 
@@ -13,8 +15,11 @@ import bits
 import experiment
 
 pygame.init()
+pygame.freetype.init()
 
 class Engine(object):
+    SCROLL_SPEED = 15
+    
     def __init__(self, screen, world, ticksPerSecond=30):
         self.screen = screen
         self.world = world
@@ -70,7 +75,22 @@ class Engine(object):
                         else:
                             self.screen.surface.fill((20,20,20), special_flags=BLEND_RGB_ADD)
                             self.screen.surface.blit(self.performanceModeIcon, self.performanceModeIconPos)
+                            self.screen.renderText("Performance Mode Enabled", (128,0,0))
                             self.screen.update()
+                            while not self.rendering:
+                                self.world.tick()
+                                for event in pygame.event.get():
+                                    if event.type == QUIT:
+                                        self.quitting = True
+                                    elif event.type == KEYDOWN:
+                                        if event.key == K_ESCAPE:
+                                            self.quitting = True
+                                            self.rendering = True
+                                        elif event.key == K_p:
+                                            self.rendering = True
+                            self.world.flush()
+                            self.rendering = True
+                                        
                     elif event.key == K_a:
                         print("ATOMS IN EXPERIMENT: ", experiment.probeAtoms(self.world))
                     elif event.key == K_e:
@@ -93,13 +113,13 @@ class Engine(object):
             else:
                 keys = pygame.key.get_pressed()
                 if pygame.key.get_pressed()[K_LEFT]:
-                    self.screen.cameraX += 15
+                    self.screen.cameraX += Engine.SCROLL_SPEED
                 if pygame.key.get_pressed()[K_RIGHT]:
-                    self.screen.cameraX -= 15
+                    self.screen.cameraX -= Engine.SCROLL_SPEED
                 if pygame.key.get_pressed()[K_UP]:
-                    self.screen.cameraY += 15
+                    self.screen.cameraY += Engine.SCROLL_SPEED
                 if pygame.key.get_pressed()[K_DOWN]:
-                    self.screen.cameraY -= 15
+                    self.screen.cameraY -= Engine.SCROLL_SPEED
 
                 self.screen.surface.fill((255,255,255))
                 self.screen.writeCanvas()
@@ -142,6 +162,7 @@ class RenderLoadingScreen(object):
             
     def drawMainIcon(self):
         self.screen.surface.blit(self.mainIcon, (self.left, self.top))
+        self.screen.renderText(" "*50 + "Rendering Experiment" + " "*50, (0,0,128))
         self.screen.update()
         
     def drawNewDot(self, number):
@@ -178,6 +199,14 @@ class Screen(object):
 
         self.width = width
         self.height = height
+
+        self.font = pygame.freetype.Font("assets/georgia.ttf", 30)
+
+    def renderText(self, text, color = (0,0,0), x=0.50, y=0.75):
+        surf, rect = self.font.render(text, color, (255,255,255))
+        rect.centerx = self.width * x
+        rect.centery = self.height * y
+        self.surface.blit(surf, rect)
 
     def writeCanvas(self):
         self.surface.blit(self.canvas.surface, (self.cameraX, self.cameraY))
