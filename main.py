@@ -42,15 +42,7 @@ def runGraphics():
           'c' + 'c' + 'y'*50 + 'c' + 'y'*50 + 'c' + 'y'*400 + 'q' + \
           'd'*10 + dna
 
-
-    bits.Ribosome(90, 35, rna, 0)
     
-    for i in range(50):
-        bits.AminoAcid(random.randrange(60,110), random.randrange(20, 50))
-    for i in range(5):
-        bits.Oxidizer(random.randrange(world.width), random.randrange(world.height))
-    for i in range(1):
-        bits.StrongAcid(random.randrange(world.width), random.randrange(world.height))
 
     screen.fill((255,255,255))
 
