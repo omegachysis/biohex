@@ -83,11 +83,9 @@ class Engine(object):
                                     if event.type == QUIT:
                                         self.quitting = True
                                     elif event.type == KEYDOWN:
-                                        if event.key == K_ESCAPE:
-                                            self.quitting = True
+                                        if event.key == K_ESCAPE or event.key == K_p:
                                             self.rendering = True
-                                        elif event.key == K_p:
-                                            self.rendering = True
+                                            
                             self.world.flush()
                             self.rendering = True
                                         
@@ -112,13 +110,13 @@ class Engine(object):
 
             else:
                 keys = pygame.key.get_pressed()
-                if pygame.key.get_pressed()[K_LEFT]:
+                if keys[K_LEFT]:
                     self.screen.cameraX += Engine.SCROLL_SPEED
-                if pygame.key.get_pressed()[K_RIGHT]:
+                if keys[K_RIGHT]:
                     self.screen.cameraX -= Engine.SCROLL_SPEED
-                if pygame.key.get_pressed()[K_UP]:
+                if keys[K_UP]:
                     self.screen.cameraY += Engine.SCROLL_SPEED
-                if pygame.key.get_pressed()[K_DOWN]:
+                if keys[K_DOWN]:
                     self.screen.cameraY -= Engine.SCROLL_SPEED
 
                 self.screen.surface.fill((255,255,255))
