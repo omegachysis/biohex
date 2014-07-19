@@ -33,10 +33,8 @@ class Necrosis(life.Bit):
     ENTROPY = 4
     ENTHALPY = 0
 
-    def __init__(self, x, y, atoms):
+    def __init__(self, x, y):
         super().__init__(x,y)
-
-        self.atoms = list(atoms)
 
         life.Looper(self, self.randomWalk, 5)
 
@@ -49,10 +47,8 @@ class CausticNecrosis(life.Bit):
     ENTROPY = 10
     ENTHALPY = 0
 
-    def __init__(self, x, y, atoms):
+    def __init__(self, x, y):
         super().__init__(x,y)
-
-        self.atoms = list(atoms)
 
         life.Looper(self, self.randomWalk, 5)
 

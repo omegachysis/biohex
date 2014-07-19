@@ -41,7 +41,7 @@ def runGraphics():
 
     random.seed(0)
 
-    RNA = "AmmmmmmmmmmmmmmQ"
+    RNA = "Ag" + chr(10) + "mmmmmmrrrg" + chr(10) + "Q"
 
     DNA = bitLibrary.functions._convertRNA(RNA)
     print("DNA: ", DNA)

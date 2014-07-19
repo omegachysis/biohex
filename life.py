@@ -168,26 +168,42 @@ class Bit(object):
         self.loopers = []
 
     def die(self):
-        self.destroy()
-        newBit = bits.Necrosis(self.x, self.y, self.atoms)
-        newBit.enthalpy = self.enthalpy
+        self.becomeBit(bits.Necrosis, {}, True)
         
     def dieError(self):
-        self.destroy()
-        bits.CausticNecrosis(self.x, self.y, self.atoms)
+        self.becomeBit(bits.CausticNecrosis, {}, False)
 
-    def makeBit(self, bitclass, pos, args={}, enthalpy=None):
+    def becomeBit(self, bitclass, args={}, saveEnthalpy=True):
+        self.destroy()
+        if saveEnthalpy:
+            self.makeBit(bitclass, (self.x, self.y), args, enthalpy = self.enthalpy,
+                         atoms = self.atoms)
+        else:
+            self.makeBit(bitclass, (self.x, self.y), args, enthalpy = None,
+                         atoms = self.atoms)
+
+    def makeBit(self, bitclass, pos, args={}, atoms=None, enthalpy=None):
         if enthalpy == None:
             enthalpy = bitclass.ENTHALPY
+        if atoms == None:
+            atoms = list(bitclass.atoms)
+        else:
+            atoms = list(atoms)
+            
         if len([i for i in range(len(self.atoms)) if \
-                self.atoms[i] >= bitclass.atoms[i]]) == len(self.atoms) and \
+                self.atoms[i] >= atoms[i]]) == len(self.atoms) and \
                 enthalpy <= self.enthalpy and \
                 not getBit(*pos):
             for i in range(len(self.atoms)):
-                self.atoms[i] -= bitclass.atoms[i]
+                self.atoms[i] -= atoms[i]
+                
             self.enthalpy -= enthalpy
 
-            return bitclass(pos[0], pos[1], **args)
+            newBit = bitclass(pos[0], pos[1], **args)
+            newBit.enthalpy = enthalpy
+            newBit.atoms = atoms
+
+            return newBit
 
         else:
             return None
