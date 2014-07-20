@@ -32,7 +32,9 @@ class Ribosome(life.Bit):
         self.codeType = self.rna[0]
         self.frame = 1
 
-        self.vector.heading = random.randrange(6)
+        self.chemicalIdentifier = random.randrange(0,100000)
+
+        self.vector.angle = random.randrange(6)
 
         self.startEnthalpy(100)
 
@@ -46,29 +48,33 @@ class Ribosome(life.Bit):
             if codon == 'g':
                 self.frame += 1
                 codonArg = self.rna[self.frame]
+                self.frame += 1
+                codonArg2 = self.rna[self.frame]
 
                 growthAmount = ord(codonArg)
-                giveAtoms = [i * growthAmount for i in bits.ProteinCellMembrane.ATOMS]
-                giveEnthalpy = bits.ProteinCellMembrane.ENTHALPY * growthAmount
+                giveAtoms = [i * growthAmount * 2 for i in bits.ProteinCellMembrane.ATOMS]
+                giveEnthalpy = bits.ProteinCellMembrane.ENTHALPY * growthAmount * 2
 
-                print(growthAmount)
-                print(giveAtoms)
+                extraAmounts = ord(codonArg2) + growthAmount
+
+                giveMoreAtoms = [i*(extraAmounts+growthAmount) for i in bits.ProteinCellMembrane.ATOMS]
+                giveMoreEnthalpy = bits.ProteinCellMembrane.ENTHALPY * (growthAmount + extraAmounts)
                 
                 self.makeBit(bits.ProteinMembraneGrower, self.vector.behind,
                              enthalpy = giveEnthalpy, atoms = giveAtoms,
-                             args = {"growingAngle" : self.vector.angle - 3})
+                             args = {"growingAngle" : self.vector.angle - 3, "outwardLength" : growthAmount})
 
                 self.vector.turnRight()
                 
                 self.makeBit(bits.ProteinMembraneGrower, self.vector.behind,
-                             enthalpy = giveEnthalpy, atoms = giveAtoms,
-                             args = {"growingAngle" : self.vector.angle - 3})
+                             enthalpy = giveMoreEnthalpy, atoms = giveMoreAtoms,
+                             args = {"growingAngle" : self.vector.angle - 3, "outwardLength" : growthAmount})
 
                 self.vector.turnLeft(2)
                 
                 self.makeBit(bits.ProteinMembraneGrower, self.vector.behind,
                              enthalpy = giveEnthalpy, atoms = giveAtoms,
-                             args = {"growingAngle" : self.vector.angle - 3})
+                             args = {"growingAngle" : self.vector.angle - 3, "outwardLength" : growthAmount})
 
                 self.vector.turnRight()
 
