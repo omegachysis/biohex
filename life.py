@@ -15,7 +15,7 @@ for file in glob.glob("bitGraphics/*.png"):
 
 def getBit(x, y):
         try:
-            return bool(Bit.world.bitPositions[x][y])
+            return Bit.world.bitPositions[x][y]
         except:
             return False
 
@@ -24,14 +24,35 @@ def isValid(x, y):
            y >= 0 and y < Bit.world.height and \
             not getBit(x, y))
 
+class VectorFakeBit(object):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def moveto(self, pos):
+        self.x, self.y = pos
+
 class Vector(object):
-    def __init__(self, bit, direction=0):
-        self.bit = bit
+    def __init__(self, bit=None, direction=0, x=0, y=0):
+        if bit:
+            self.bit = bit
+        else:
+            self.bit = VectorFakeBit(x, y)
         self._direction = direction
         self._ahead = None
 
     def __serialize__(self):
         return (self._direction, self._ahead)
+
+    def getAngleTowards(self, posVector):
+        pass:
+
+    def moveAhead(self):
+        self.bit.moveto(self.ahead)
+
+    def getPosition(self):
+        return (self.bit.x, self.bit.y)
+    position = property(getPosition)
 
     def reverse(self):
         if self.angle != None:
@@ -178,6 +199,36 @@ class Bit(object):
         self.moveto(newPosition)
     position = property(getPosition, setPosition)
 
+    def getRings(self, distance):
+        tiles = []
+        for i in range(1, distance):
+            for tile in self.getRing(i):
+                tiles.append(tile)
+        return tiles
+
+    def getRing(self, distance):
+        tiles = []
+        if distance == 1:
+            tiles = self.getAdjs()
+        else:
+            newVector = Vector(None, 0, self.x, self.y)
+            for i in range(distance):
+                    newVector.moveAhead()
+
+            tiles.append(newVector.position)
+
+            newVector.turnRight(2)
+
+            for e in range(6):
+                for i in range(distance):
+                    newVector.moveAhead()
+                    if newVector.position not in tiles:
+                        tiles.append(newVector.position)
+
+                newVector.turnRight(1)
+
+        return tiles
+
     def die(self):
         self.becomeBit(bits.Necrosis, {}, True)
         
@@ -276,6 +327,9 @@ class Bit(object):
 
         valids = [i for i in positions if not getBit(*i)]
 
+        if args == [] or args == {}:
+            args = [{}]*amount
+
         # this will completely fail if even ONE of the positions
         # is not valid (i.e. a bit is there).  Use becomeBits()
         # if it is important that it happens.  becomeBits() always
@@ -291,9 +345,12 @@ class Bit(object):
 
             self.enthalpy -= totalEnthalpy
             newBits = []
-            for argSet in args:
+            i = 0
+            for pos in positions:
+                argSet = args[i]
                 newBit = bitclass(pos[0], pos[1], **argSet)
                 newBits.append(newBit)
+                i += 1
 
             return newBits
         else:
@@ -402,8 +459,19 @@ class Bit(object):
 
         return self.move(walkX, walkY)
 
+    def moveTowards(self, pos):
+        i = 0
+        for dim in pos:
+            if dim < -1:
+                pos[i] = -1
+            elif dim > 1:
+                pos[i] = 1
+
+        return self.vector.getAngleTowards(pos)
+
     def lookout(self, bitName, searchRadius):
-        return [i for i in self.getList(bitName) if self.distance(i) <= searchRadius]
+        return [getBit(*i) for i in self.getRings(searchRadius) if getBit(*i) and \
+            getBit(*i).name == bitName]
 
     def addLooper(self, newLooper):
         if newLooper not in self.loopers:

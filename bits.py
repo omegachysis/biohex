@@ -2,6 +2,7 @@
 import random
 import life
 
+from bitLibrary.experiments import *
 from bitLibrary.chemicals import *
 ##from bitLibrary.hormones import *
 ##from bitLibrary.membranes import *
