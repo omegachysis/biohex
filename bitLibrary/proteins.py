@@ -3,7 +3,7 @@ import life
 import bits
 
 class ProteinMembraneGrower(life.Bit):
-    atoms = None
+    ATOMS = None
 
     ENTROPY = 1
     ENTHALPY = 0
@@ -13,7 +13,7 @@ class ProteinMembraneGrower(life.Bit):
 
         self.vector.angle = growingAngle
 
-        self.startEnthalpy(100)
+        self.startEnthalpy(300)
 
     def tick(self):
         super().tick()
@@ -24,7 +24,7 @@ class ProteinMembraneGrower(life.Bit):
 
 class ProteinCellMembrane(life.Bit):
 
-    atoms = [3,1,0]
+    ATOMS = [3,1,0]
 
     ENTROPY = 2
     ENTHALPY = 3
@@ -32,7 +32,7 @@ class ProteinCellMembrane(life.Bit):
     def __init__(self, x, y):
         super().__init__(x,y)
 
-        self.startEnthalpy(100)
+        self.startEnthalpy(300)
 
     def enthalpyProgress(self):
         super().enthalpyProgress()

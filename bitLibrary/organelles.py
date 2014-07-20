@@ -4,7 +4,7 @@ import bits
 import random
 
 class OrganelleMatrix(life.Bit):
-    atoms = [1,1,1]
+    ATOMS = [1,1,1]
 
     ENTROPY = 1
     ENTHALPY = 10
@@ -20,17 +20,13 @@ class OrganelleMatrix(life.Bit):
 class Ribosome(life.Bit):
     """ Turns genetic code and raw materials into proteins. """
     
-    atoms = [800,500,300]
+    ATOMS = [800,500,300]
 
     ENTROPY = 1
     ENTHALPY = 1000
 
     def __init__(self, x, y, dna):
         super().__init__(x,y)
-
-        # keep a storage available of atoms to use
-        # to build the organisms parts
-        self.atoms = list(Ribosome.atoms)
 
         self.rna = bits.functions._convertDNA(dna)
         self.codeType = self.rna[0]
@@ -52,7 +48,7 @@ class Ribosome(life.Bit):
                 codonArg = self.rna[self.frame]
 
                 growthAmount = ord(codonArg)
-                giveAtoms = [i * growthAmount for i in bits.ProteinCellMembrane.atoms]
+                giveAtoms = [i * growthAmount for i in bits.ProteinCellMembrane.ATOMS]
                 giveEnthalpy = bits.ProteinCellMembrane.ENTHALPY * growthAmount
 
                 print(growthAmount)

@@ -148,6 +148,10 @@ class Bit(object):
         self.name = self.__class__.__name__
 
         self.enthalpy = self.ENTHALPY
+        if self.ATOMS != None:
+            self.atoms = list(self.ATOMS)
+        else:
+            self.atoms = None
         
         self.x = x
         self.y = y
@@ -205,14 +209,16 @@ class Bit(object):
         
         # We know that this will be successful 100% of the time.
         # you cannot fail making a bit where you just destroyed one.
+
+        madeBit = None
         
         if saveEnthalpy:
-            self.makeBit(bitclass, (self.x, self.y), args, enthalpy = self.enthalpy,
+            madeBit = self.makeBit(bitclass, (self.x, self.y), args, enthalpy = self.enthalpy,
                          atoms = self.atoms)
         else:
-            self.makeBit(bitclass, (self.x, self.y), args, enthalpy = None,
+            madeBit = self.makeBit(bitclass, (self.x, self.y), args, enthalpy = None,
                          atoms = self.atoms)
-
+            
     def becomeBits(self, bitclass, positions, args={}, saveEnthalpy=True):
         self.destroy()
 
@@ -229,17 +235,15 @@ class Bit(object):
         if isinstance(args, dict):
             args = [args] * amount
 
-            print("CONVERTED")
-
         i = 0
         for position in positions:
             if saveEnthalpy:
                 if not self.makeBit(bitclass, position, args[i], enthalpy = bitclass.ENTHALPY,
-                                    atoms = bitclass.atoms):
+                                    atoms = bitclass.ATOMS):
                     break
             else:
                 if not self.makeBit(bitclass, position, args[i], enthalpy = None,
-                                    atoms = bitclass.atoms):
+                                    atoms = bitclass.ATOMS):
                     break
 
         if saveEnthalpy:
@@ -259,7 +263,7 @@ class Bit(object):
         if enthalpy == None:
             enthalpy = bitclass.ENTHALPY
         if atoms == None:
-            atoms = list(bitclass.atoms)
+            atoms = list(bitclass.ATOMS)
         else:
             atoms = list(atoms)
 
@@ -299,7 +303,7 @@ class Bit(object):
         if enthalpy == None:
             enthalpy = bitclass.ENTHALPY
         if atoms == None:
-            atoms = list(bitclass.atoms)
+            atoms = list(bitclass.ATOMS)
         else:
             atoms = list(atoms)
             

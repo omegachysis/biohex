@@ -4,7 +4,7 @@ import bits
 
 class AminoAcid(life.Bit):
     """ Used as a building block for life. """
-    atoms = [7,6,2]
+    ATOMS = [7,6,2]
 
     ENTROPY = 3
     ENTHALPY = 15
@@ -16,7 +16,7 @@ class AminoAcid(life.Bit):
         self.randomWalk()
 
 class Water(life.Bit):
-    atoms = [1,1,0]
+    ATOMS = [1,1,0]
 
     ENTROPY = 5
     ENTHALPY = 0
@@ -28,7 +28,7 @@ class Water(life.Bit):
         self.randomWalk()
 
 class Necrosis(life.Bit):
-    atoms = [0,0,0]
+    ATOMS = [0,0,0]
 
     ENTROPY = 4
     ENTHALPY = 0
@@ -42,7 +42,7 @@ class Necrosis(life.Bit):
         super().tick()
 
 class LipidSalt(life.Bit):
-    atoms = [5,5,1]
+    ATOMS = [5,5,1]
 
     ENTROPY = 5
     ENTHALPY = 10
@@ -56,7 +56,7 @@ class LipidSalt(life.Bit):
         super().tick()
 
 class Lipid(life.Bit):
-    atoms = [5,5,1]
+    ATOMS = [5,5,1]
 
     ENTROPY = 4
     ENTHALPY = 50
@@ -73,7 +73,7 @@ class Lipid(life.Bit):
         super().tick()
     
 class CausticNecrosis(life.Bit):
-    atoms = [0,0,0]
+    ATOMS = [0,0,0]
 
     ENTROPY = 10
     ENTHALPY = 0
