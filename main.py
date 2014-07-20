@@ -112,13 +112,20 @@ def runConsole():
 
     input()
 
-def main():
-    runGraphics()
+def main(profile = False):
+
+    statement = "runGraphics()"
+
+    if profile:
+        import cProfile
+        cProfile.run(statement)
+        input()
+    else:
+        exec(statement)
 
 if __name__ == "__main__":
     try:
         main()
     except:
-        pygame.quit()
         print(traceback.format_exc())
         input()

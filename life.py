@@ -45,7 +45,8 @@ class Vector(object):
         return (self._direction, self._ahead)
 
     def getAngleTowards(self, posVector):
-        pass:
+        # TODO
+        pass
 
     def moveAhead(self):
         self.bit.moveto(self.ahead)

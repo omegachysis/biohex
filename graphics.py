@@ -41,6 +41,9 @@ class Engine(object):
     def update(self):
         pass
 
+    def quit(self):
+        self.quitting = True
+
     def mainloop(self):
         clock = pygame.time.Clock()
 
@@ -52,10 +55,10 @@ class Engine(object):
             self.stepping = False
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    self.quitting = True
+                    self.quit()
                 elif event.type == KEYDOWN:
                     if event.key == K_ESCAPE:
-                        self.quitting = True
+                        self.quit()
                     elif event.key == K_RETURN:
                         self.running = not self.running
                     elif event.key == K_SPACE:
@@ -81,7 +84,7 @@ class Engine(object):
                                 self.world.tick()
                                 for event in pygame.event.get():
                                     if event.type == QUIT:
-                                        self.quitting = True
+                                        self.quit()
                                     elif event.type == KEYDOWN:
                                         if event.key == K_ESCAPE or event.key == K_p:
                                             self.rendering = True      
@@ -123,6 +126,8 @@ class Engine(object):
                 self.screen.update()
 
                 clock.tick(60)
+
+        pygame.quit()
         
     def start(self):
         self.world.flush()
