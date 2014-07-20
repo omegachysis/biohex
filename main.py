@@ -41,13 +41,16 @@ def runGraphics():
 
     random.seed(0)
 
-    RNA = "Ag" + chr(10) + "mmmmmmrrrg" + chr(10) + "Q"
+    RNA = "Ag" + chr(10) + "mmmmmmmmmmmmmmmmmmmmmrrrg" + chr(10) + "Q"
 
     DNA = bitLibrary.functions._convertRNA(RNA)
     print("DNA: ", DNA)
 
     bits.Ribosome(WORLD_WIDTH//2, WORLD_HEIGHT//2, DNA)
 
+    for i in range(150):
+        bits.Lipid(random.randrange(WORLD_WIDTH),
+                   random.randrange(WORLD_HEIGHT))
     for i in range(150):
         bits.AminoAcid(random.randrange(WORLD_WIDTH),
                        random.randrange(WORLD_HEIGHT))

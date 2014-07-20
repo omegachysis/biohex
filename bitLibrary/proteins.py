@@ -34,5 +34,10 @@ class ProteinCellMembrane(life.Bit):
 
         self.startEnthalpy(100)
 
+    def enthalpyProgress(self):
+        super().enthalpyProgress()
+        
+        self.siphonEnthalpy("Lipid", 20, amount = 3, limit = True)
+
     def tick(self):
         super().tick()

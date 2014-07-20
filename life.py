@@ -165,7 +165,14 @@ class Bit(object):
 
         self.vector = Vector(self, 0)
 
+        self.enthalpyLooper = None
         self.loopers = []
+
+    def getPosition(self):
+        return (self.x, self.y)
+    def setPosition(self, newPosition):
+        self.moveto(newPosition)
+    position = property(getPosition, setPosition)
 
     def die(self):
         self.becomeBit(bits.Necrosis, {}, True)
@@ -173,14 +180,120 @@ class Bit(object):
     def dieError(self):
         self.becomeBit(bits.CausticNecrosis, {}, False)
 
+    def siphonEnthalpy(self, bitName, distance, amount=1, limit=True):
+        for bit in self.lookout(bitName, distance):
+            if self.enthalpy < self.ENTHALPY or not limit:
+                self.grabEnthalpy(bit, amount)
+        
+    def grabEnthalpy(self, bit, amount=1):
+        if bit.enthalpy >= amount:
+            bit.enthalpy -= amount
+            self.enthalpy += amount
+            self.enthalpyUpdate()
+            bit.enthalpyUpdate()
+            return True
+        elif bit.enthalpy < amount and bit.enthalpy > 0:
+            self.enthalpy += bit.enthalpy
+            bit.enthalpy = 0
+            self.enthalpyUpdate()
+            bit.enthalpyUpdate()
+        else:
+            return False
+
     def becomeBit(self, bitclass, args={}, saveEnthalpy=True):
         self.destroy()
+        
+        # We know that this will be successful 100% of the time.
+        # you cannot fail making a bit where you just destroyed one.
+        
         if saveEnthalpy:
             self.makeBit(bitclass, (self.x, self.y), args, enthalpy = self.enthalpy,
                          atoms = self.atoms)
         else:
             self.makeBit(bitclass, (self.x, self.y), args, enthalpy = None,
                          atoms = self.atoms)
+
+    def becomeBits(self, bitclass, positions, args={}, saveEnthalpy=True):
+        self.destroy()
+
+        filteredPositions = []
+        # remove repeated positions
+        for pos in positions:
+            if pos not in filteredPositions:
+                filteredPositions.append(tuple(pos))
+
+        if self.position in positions:
+            positions.remove(self.position)
+
+        amount = len(positions) + 1
+        if isinstance(args, dict):
+            args = [args] * amount
+
+            print("CONVERTED")
+
+        i = 0
+        for position in positions:
+            if saveEnthalpy:
+                if not self.makeBit(bitclass, position, args[i], enthalpy = bitclass.ENTHALPY,
+                                    atoms = bitclass.atoms):
+                    break
+            else:
+                if not self.makeBit(bitclass, position, args[i], enthalpy = None,
+                                    atoms = bitclass.atoms):
+                    break
+
+        if saveEnthalpy:
+            self.makeBit(bitclass, self.position, args[-1], enthalpy = self.enthalpy,
+                         atoms = self.atoms)
+        else:
+            self.makeBit(bitclass, self.position, args[-1], enthalpy = None,
+                         atoms = self.atoms)
+
+    def makeBits(self, bitclass, positions, args=[], atoms=None, enthalpy=None):
+        filteredPositions = []
+        # remove repeated positions
+        for pos in positions:
+            if pos not in filteredPositions:
+                filteredPositions.append(tuple(pos))
+        
+        if enthalpy == None:
+            enthalpy = bitclass.ENTHALPY
+        if atoms == None:
+            atoms = list(bitclass.atoms)
+        else:
+            atoms = list(atoms)
+
+        amount = len(positions)
+        if isinstance(args, type(dict)):
+            args = [args]*amount
+
+        totalAtoms = [i*amount for i in atoms]
+        totalEnthalpy = enthalpy * amount
+
+        valids = [i for i in positions if not getBit(*i)]
+
+        # this will completely fail if even ONE of the positions
+        # is not valid (i.e. a bit is there).  Use becomeBits()
+        # if it is important that it happens.  becomeBits() always
+        # works because if anything is leftover from being invalid,
+        # the "becoming" will take the missing value.
+
+        if len([i for i in range(len(self.atoms)) if \
+                self.atoms[i] >= totalAtoms[i]]) == len(self.atoms) and \
+                self.enthalpy >= totalEnthalpy and \
+                len(valids) == len(positions):
+            for i in range(len(totalAtoms)):
+                self.atoms[i] -= totalAtoms[i]
+
+            self.enthalpy -= totalEnthalpy
+            newBits = []
+            for argSet in args:
+                newBit = bitclass(pos[0], pos[1], **argSet)
+                newBits.append(newBit)
+
+            return newBits
+        else:
+            return None
 
     def makeBit(self, bitclass, pos, args={}, atoms=None, enthalpy=None):
         if enthalpy == None:
@@ -192,7 +305,7 @@ class Bit(object):
             
         if len([i for i in range(len(self.atoms)) if \
                 self.atoms[i] >= atoms[i]]) == len(self.atoms) and \
-                enthalpy <= self.enthalpy and \
+                self.enthalpy >= enthalpy and \
                 not getBit(*pos):
             for i in range(len(self.atoms)):
                 self.atoms[i] -= atoms[i]
@@ -214,11 +327,15 @@ class Bit(object):
     def startEnthalpy(self, multiplier=10):
         self.enthalpyLooper = Looper(self, self.enthalpyProgress, multiplier)
 
+    def enthalpyUpdate(self):
+        if self.enthalpy <= 0:
+            self.enthalpyDeath()
+            if self.enthalpyLooper:
+                self.enthalpyLooper.stop()
+
     def enthalpyProgress(self):
         self.enthalpy -= 1
-        if self.enthalpy == 0:
-            self.enthalpyDeath()
-            self.enthalpyLooper.stop()
+        self.enthalpyUpdate()
 
     def getIndex(self):
         if self in self.world.bits:

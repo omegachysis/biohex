@@ -7,7 +7,7 @@ class AminoAcid(life.Bit):
     atoms = [7,6,2]
 
     ENTROPY = 3
-    ENTHALPY = 3
+    ENTHALPY = 15
     
     def __init__(self, x, y):
         super().__init__(x,y)
@@ -37,6 +37,37 @@ class Necrosis(life.Bit):
         super().__init__(x,y)
 
         life.Looper(self, self.randomWalk, 5)
+
+    def tick(self):
+        super().tick()
+
+class LipidSalt(life.Bit):
+    atoms = [5,5,1]
+
+    ENTROPY = 5
+    ENTHALPY = 10
+
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+        life.Looper(self, self.randomWalk, 5)
+
+    def tick(self):
+        super().tick()
+
+class Lipid(life.Bit):
+    atoms = [5,5,1]
+
+    ENTROPY = 4
+    ENTHALPY = 50
+
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+        life.Looper(self, self.randomWalk, 2)
+
+    def enthalpyDeath(self):
+        self.becomeBit(LipidSalt)
 
     def tick(self):
         super().tick()

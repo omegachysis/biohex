@@ -86,10 +86,13 @@ class Ribosome(life.Bit):
                     if not self.makeBit(bits.OrganelleMatrix, self.vector.behind):
                         self.frame -= 1
                         self.moveto(self.vector.behind)
+
+            elif codon == ' ':
+                self.moveto(self.vector.ahead)
                     
             elif codon == 'Q':
-                self.becomeBit(bits.OrganelleMatrix, {}, True)
-                               
+                self.becomeBits(bits.Lipid, self.getAdjValids(), {}, True)
+
             else:
                 self.frame += 1
         
