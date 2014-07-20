@@ -236,10 +236,16 @@ class Bit(object):
     def dieError(self):
         self.becomeBit(bits.CausticNecrosis, {}, False)
 
-    def siphonEnthalpy(self, bitName, distance, amount=1, limit=True):
+    def siphonEnthalpy(self, bitName, distance, amount=1, limit=0):
         for bit in self.lookout(bitName, distance):
-            if self.enthalpy < self.ENTHALPY or not limit:
+            maxCanGrab = limit - self.enthalpy
+            if not limit:
                 self.grabEnthalpy(bit, amount)
+            else:
+                if amount >= maxCanGrab:
+                    self.grabEnthalpy(bit, maxCanGrab)
+                else:
+                    self.grabEnthalpy(bit, amount)
         
     def grabEnthalpy(self, bit, amount=1):
         if bit.enthalpy >= amount:

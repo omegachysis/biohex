@@ -71,6 +71,7 @@ class Engine(object):
                         self.ticksPerSecond = 30
                     elif event.key == K_4:
                         self.ticksPerSecond = 0
+
                     elif event.key == K_p:
                         self.rendering = not self.rendering
                         if self.rendering:
