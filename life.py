@@ -9,6 +9,10 @@ import bits
 import math
 import traceback
 
+class locals():
+    RING_LOAD = 0
+    DISTANCE_SEARCH = 1
+
 bitList = []
 for file in glob.glob("bitGraphics/*.png"):
     bitList.append(path.basename(file)[:-4])
@@ -23,98 +27,6 @@ def isValid(x, y):
     return (x >= 0 and x < Bit.world.width and \
            y >= 0 and y < Bit.world.height and \
             not getBit(x, y))
-
-class VectorFakeBit(object):
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def moveto(self, pos):
-        self.x, self.y = pos
-
-class Vector(object):
-    def __init__(self, bit=None, direction=0, x=0, y=0):
-        if bit:
-            self.bit = bit
-        else:
-            self.bit = VectorFakeBit(x, y)
-        self._direction = direction
-        self._ahead = None
-
-    def __serialize__(self):
-        return (self._direction, self._ahead)
-
-    def getAngleTowards(self, posVector):
-        # TODO
-        pass
-
-    def moveAhead(self):
-        self.bit.moveto(self.ahead)
-
-    def getPosition(self):
-        return (self.bit.x, self.bit.y)
-    position = property(getPosition)
-
-    def reverse(self):
-        if self.angle != None:
-            self.angle -= 3
-    def turnLeft(self, units=1):
-        self.angle -= units
-    def turnRight(self, units=1):
-        self.angle += units
-
-    def getAhead(self):
-        if self._direction != None:
-            setOdd = (
-                (-1, 0), (0, -1), (1, 0), (1, 1), (0, 1), (-1, 1))
-            setEven = (
-                (-1, -1), (0, -1), (1, -1), (1, 0), (0, 1), (-1, 0))
-            if hexmech.isOdd(self.bit.x):
-                setThis = setOdd
-            else:
-                setThis = setEven
-            return (setThis[self._direction][0] + self.bit.x, setThis[self._direction][1] + self.bit.y)
-        
-        else:
-            return (self._ahead[0] + self.bit.x, self._ahead[1] + self.bit.y)
-    
-    def setAhead(self, value):
-        setOdd = (
-            (-1, 0), (0, -1), (1, 0), (1, 1), (0, 1), (-1, 1))
-        setEven = (
-            (-1, -1), (0, -1), (1, -1), (1, 0), (0, 1), (-1, 0))
-        
-        if value in setOdd and hexmech.isOdd(self.bit.x):
-            self._direction = setOdd.index(value)
-        elif value in setEven and hexmech.isEven(self.bit.x):
-            self._direction = setEven.index(value)
-        else:
-            self._direction = None
-            self._ahead = (self.bit.x + value[0], self.bit.y + value[1])
-
-    ahead = property(getAhead, setAhead)
-
-    def getBehind(self):
-        self.angle -= 3
-        value = self.getAhead()
-        self.angle += 3
-        return value
-
-    behind = property(getBehind)
-
-    def getAngle(self):
-        if self._direction != None:
-            return self._direction % 6
-        else:
-            return None
-        
-    def setAngle(self, value):
-        if value != None:
-            self._direction = value % 6
-        else:
-            self._direction = None
-            
-    angle = property(getAngle, setAngle)
 
 class Looper(object):
     def __init__(self, bit, command, delay):
@@ -189,7 +101,7 @@ class Bit(object):
         else:
             self.destroyed = True
 
-        self.vector = Vector(self, 0)
+        self.vector = hexmech.Vector(self, 0)
 
         self.enthalpyLooper = None
         self.loopers = []
@@ -201,34 +113,10 @@ class Bit(object):
     position = property(getPosition, setPosition)
 
     def getRings(self, distance):
-        tiles = []
-        for i in range(1, distance):
-            for tile in self.getRing(i):
-                tiles.append(tile)
-        return tiles
+        return hexmech.getRings(self.x, self.y, distance)
 
     def getRing(self, distance):
-        tiles = []
-        if distance == 1:
-            tiles = self.getAdjs()
-        else:
-            newVector = Vector(None, 0, self.x, self.y)
-            for i in range(distance):
-                    newVector.moveAhead()
-
-            tiles.append(newVector.position)
-
-            newVector.turnRight(2)
-
-            for e in range(6):
-                for i in range(distance):
-                    newVector.moveAhead()
-                    if newVector.position not in tiles:
-                        tiles.append(newVector.position)
-
-                newVector.turnRight(1)
-
-        return tiles
+        return hexmech.getRing(self.x, self.y, distance)
 
     def die(self):
         self.becomeBit(bits.Necrosis, {}, True)
@@ -236,8 +124,8 @@ class Bit(object):
     def dieError(self):
         self.becomeBit(bits.CausticNecrosis, {}, False)
 
-    def siphonEnthalpy(self, bitName, distance, amount=1, limit=0):
-        for bit in self.lookout(bitName, distance):
+    def siphonEnthalpy(self, bitName, distance, amount=1, limit=0, technique=locals.RING_LOAD):
+        for bit in self.lookout(bitName, distance, technique = technique):
             maxCanGrab = limit - self.enthalpy
             if not limit:
                 self.grabEnthalpy(bit, amount)
@@ -476,9 +364,16 @@ class Bit(object):
 
         return self.vector.getAngleTowards(pos)
 
-    def lookout(self, bitName, searchRadius):
-        return [getBit(*i) for i in self.getRings(searchRadius) if getBit(*i) and \
-            getBit(*i).name == bitName]
+    def lookout(self, bitName, searchRadius, technique = locals.RING_LOAD):
+        if not isinstance(bitName, str):
+            bitName = bitName.name
+
+        if technique == locals.RING_LOAD:
+            return [getBit(*i) for i in self.getRings(searchRadius) if getBit(*i) and \
+                getBit(*i).name == bitName]
+
+        elif technique == locals.DISTANCE_SEARCH:
+            return [bit for bit in self.getList(bitName) if self.distance(bit) <= searchRadius]
 
     def addLooper(self, newLooper):
         if newLooper not in self.loopers:
@@ -498,21 +393,7 @@ class Bit(object):
         if not coord:
             coord = (self.x, self.y)
 
-        setOdd = (
-            (-1, 0), (0, -1), (1, 0), (1, 1), (0, 1), (-1, 1))
-        setEven = (
-            (-1, -1), (0, -1), (1, -1), (1, 0), (0, 1), (-1, 0))
-
-        if hexmech.isOdd(coord[0]):
-            setThis = setOdd
-        else:
-            setThis = setEven
-
-        prod = []
-        for vector in setThis:
-            prod.append((coord[0] + vector[0], coord[1] + vector[1]))
-
-        return prod
+        return hexmech.getAdjs(self.x, self.y)
 
     def getAdjBits(self, coord=None):
         if not coord:

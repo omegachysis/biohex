@@ -20,6 +20,8 @@ def runGraphics():
     hexmech.setMetrics(
         width = 10, height = 10, t = 3)
 
+    hexmech.loadRings()
+
     RES_WIDTH = 1280
     RES_HEIGHT = 720
 
@@ -127,7 +129,7 @@ def main(profile = False):
 
 if __name__ == "__main__":
     try:
-        main()
+        main( False )
     except:
         print(traceback.format_exc())
         input()

@@ -50,7 +50,7 @@ class ProteinCellMembrane(life.Bit):
     def enthalpyProgress(self):
         super().enthalpyProgress()
         
-        self.siphonEnthalpy("Lipid", 20, amount = 5, limit = 5)
+        self.siphonEnthalpy("Lipid", 20, amount = 5, limit = 5, technique = life.locals.RING_LOAD)
 
     def tick(self):
         super().tick()
