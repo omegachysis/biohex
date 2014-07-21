@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import pickle
+from os.path import exists
+from os import mkdir
 
 s = None
 t = None
@@ -127,24 +129,37 @@ class Vector(object):
     angle = property(getAngle, setAngle)
 
 def loadRing(distance, set):
-    file = open("assets/rings/{},{}.ringdat".format(distance, set), "rb")
-    return pickle.load(file)
+    print("LOADING RING")
+    try:
+        file = open("assets/ringCache/{},{}.ringdat".format(distance, set), "rb")
+        return pickle.load(file)
+    except:
+        return None
 
 def loadRings(amount=20):
     global rings
 
     for i in range(amount):
+        ringList = []
         for ii in range(2):
-            if i+1 not in rings:
-                rings[i+1] = [(),()]
-
-            rings[i+1][ii] = loadRing(i + 1, ii)
+            ring = loadRing(i+1, ii)
+            ringList.append(ring)
+        if None not in ringList:
+            rings[i + 1] = ringList
 
 def getRing(x, y, distance):
     set = isOdd(x)
     newPos = []
-    for xi,yi in rings[distance][set]:
-        newPos.append((xi+x, yi+y))
+    if distance in rings:
+        for xi,yi in rings[distance][set]:
+            newPos.append((xi+x, yi+y))
+    else:
+        rings[distance] = [(),()]
+        for i in range(2):
+            saveGridRing(distance, i)
+            rings[distance][i] = loadRing(distance, i)
+
+        return getRing(x, y, distance)
     return newPos
 
 def getRings(x, y, amount):
@@ -174,8 +189,6 @@ def getAdjs(x, y):
         return prod
 
 def saveGridRing(distance=1, set=0):
-    import pickle
-
     tiles = []
     if distance == 1:
         tiles = getAdjs(0,0)
@@ -200,7 +213,9 @@ def saveGridRing(distance=1, set=0):
 
             newVector.turnRight(1)
 
-    file = open("assets/rings/{},{}.ringdat".format(distance, set), "wb")
+    if not exists("assets/ringCache/"):
+        mkdir("assets/ringCache/")
+    file = open("assets/ringCache/{},{}.ringdat".format(distance, set), "wb")
     pickle.dump(tiles, file)
 
 def saveGridRings(amount=20):
