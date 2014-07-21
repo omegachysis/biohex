@@ -48,9 +48,7 @@ def runGraphics():
     DNA = bitLibrary.functions._convertRNA(RNA)
     print("DNA: ", DNA)
 
-    for i in range(15):
-        bits.Ribosome(random.randrange(WORLD_WIDTH),
-                   random.randrange(WORLD_HEIGHT), DNA)
+    bits.Ribosome(50, 40, DNA)
 
     for i in range(150):
         bits.Lipid(random.randrange(WORLD_WIDTH),

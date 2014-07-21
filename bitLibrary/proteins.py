@@ -1,6 +1,7 @@
 
 import life
 import bits
+import random
 
 class ProteinMembraneGrower(life.Bit):
     ATOMS = None
@@ -45,11 +46,10 @@ class ProteinCellMembrane(life.Bit):
     def __init__(self, x, y):
         super().__init__(x,y)
 
-        self.startEnthalpy(300)
+        self.startEnthalpy(random.randrange(100,500))
 
     def enthalpyProgress(self):
         super().enthalpyProgress()
-        
         self.siphonEnthalpy("Lipid", 20, amount = 5, limit = 5, technique = life.locals.RING_LOAD)
 
     def tick(self):
