@@ -52,9 +52,19 @@ class ProteinCellMembrane(life.Bit):
 
         self.startEnthalpy(random.randrange(100,500))
 
+    def multiply(self):
+        positions = self.getAdjValids()
+        self.becomeBits(ProteinCellMembrane, positions, args={}, saveEnthalpy=True)
+
     def enthalpyProgress(self):
         super().enthalpyProgress()
-        self.siphonEnthalpy("Lipid", 20, amount = 5, limit = 5, technique = life.locals.RING_LOAD)
+
+        self.siphonResources("Lipid", 20, amountEnthalpy=self.ENTHALPY, amountAtoms=self.ATOMS,
+                             limitEnthalpy=self.ENTHALPY*5, limitAtoms=[i*5 for i in self.ATOMS],
+                             technique=life.locals.RING_LOAD)
+
+        if self.enthalpy >= self.ENTHALPY * 5:
+            self.multiply()
 
     def tick(self):
         super().tick()
