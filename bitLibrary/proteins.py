@@ -31,6 +31,10 @@ class ProteinMembraneGrower(life.Bit):
             else:
                 self.outwardAmount += 1
 
+        else:
+            if life.getBit(*self.vector.ahead).name == "ProteinCellMembrane":
+                self.becomeBit(ProteinCellMembrane, args={}, saveEnthalpy=True)
+
         if self.outwardAmount == self.outwardLength:
             self.vector.turnRight(2)
             self.placingType = ProteinCellMembrane
