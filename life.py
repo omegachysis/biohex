@@ -124,16 +124,57 @@ class Bit(object):
     def dieError(self):
         self.becomeBit(bits.CausticNecrosis, {}, False)
 
-    def siphonEnthalpy(self, bitName, distance, amount=1, limit=0, technique=locals.RING_LOAD):
+    def siphonEnthalpy(self, bitName, distance, amount=1, limit=None, technique=locals.RING_LOAD):
         for bit in self.lookout(bitName, distance, technique = technique):
-            maxCanGrab = limit - self.enthalpy
-            if not limit:
-                self.grabEnthalpy(bit, amount)
+            self._siphonEnthalpyBit(bit, amount, limit)
+
+    def siphonAtoms(self, bitName, distance, amount=[1,1,1], limit=None, technique=locals.RING_LOAD):
+        for bit in self.lookout(bitName, distance, technique = technique):
+            self._siphonAtomsBit(bit, amount, limit)
+
+    def _siphonEnthalpyBit(self, bit, amount=1, limit=None):
+        maxCanGrab = limit - self.enthalpy
+        if not limit:
+            self.grabEnthalpy(bit, amount)
+        else:
+            if amount >= maxCanGrab:
+                self.grabEnthalpy(bit, maxCanGrab)
             else:
-                if amount >= maxCanGrab:
-                    self.grabEnthalpy(bit, maxCanGrab)
-                else:
-                    self.grabEnthalpy(bit, amount)
+                self.grabEnthalpy(bit, amount)
+    def _siphonAtomsBit(self, bit, amount=[1,1,1], limit=None):
+        if limit:
+            diffs = [0]*len(amount)
+            for atomIndex in range(len(amount)):
+                diffs[atomIndex] = limit[atomIndex] - self.atoms[atomIndex]
+                if diffs[atomIndex] > amount[atomIndex]:
+                    diffs[atomIndex] = amount[atomIndex]
+
+            self.grabAtoms(bit, diffs)
+        else:
+            self.grabAtoms(bit, bit.atoms)
+
+    def siphonResources(self, bitName, distance, amountEnthalpy=1, amountAtoms=[1,1,1], limitEnthalpy=None, limitAtoms=None, technique=locals.RING_LOAD):
+        for bit in self.lookout(bitName, distance, technique = technique):
+            self._siphonEnthalpyBit(bit, amountEnthalpy, limitEnthalpy)
+            self._siphonAtomsBit(bit, amountAtoms, limitAtoms)
+
+    def grabAtoms(self, bit, amount=[1,1,1]):
+        amount = list(amount)
+
+        condition = []
+        i = 0
+        for atomAmount in bit.atoms:
+            if atomAmount >= amount[i]:
+                condition.append(True)
+            i += 1
+
+        if len(condition) == len(bit.atoms):
+            for atomIndex in range(len(amount)):
+                bit.atoms[atomIndex] -= amount[atomIndex]
+                self.atoms[atomIndex] += amount[atomIndex]
+            return True
+        else:
+            return False
         
     def grabEnthalpy(self, bit, amount=1):
         if bit.enthalpy >= amount:
@@ -147,6 +188,7 @@ class Bit(object):
             bit.enthalpy = 0
             self.enthalpyUpdate()
             bit.enthalpyUpdate()
+            return True
         else:
             return False
 
