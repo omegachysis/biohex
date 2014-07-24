@@ -9,26 +9,37 @@ import bits
 import math
 import traceback
 
+# storage class for constants
 class locals():
     RING_LOAD = 0
     DISTANCE_SEARCH = 1
 
+# load up bit graphic asset names
 bitList = []
 for file in glob.glob("bitGraphics/*.png"):
     bitList.append(path.basename(file)[:-4])
 
 def getBit(x, y):
-        try:
-            return Bit.world.bitPositions[x][y]
-        except:
-            return False
+    """Return the bit at this location.  If there is no bit, return False."""
+    try:
+        return Bit.world.bitPositions[x][y]
+    except IndexError:
+        return False
 
 def isValid(x, y):
+    """
+    Return True if there is no bit at that 
+    location and the location is not out of world range.
+    """
     return (x >= 0 and x < Bit.world.width and \
            y >= 0 and y < Bit.world.height and \
             not getBit(x, y))
 
 class Looper(object):
+    """
+    Paired with a Bit, creates a class that 
+    will periodically run a command and repeat.
+    """
     def __init__(self, bit, command, delay):
         self.timer = delay
         self.delay = delay
@@ -38,6 +49,7 @@ class Looper(object):
         self.start()
         
     def __serialize__(self):
+        """Return a version of the looper that can be pickled."""
         # NOTE: THIS MEANS COMMANDS CAN ONLY BE DERIVED FROM THE CURRENT BIT!
         serializedCommand = self.command.__name__
         return (self.timer, self.delay, serializedCommand, self.paused)
@@ -46,13 +58,16 @@ class Looper(object):
         self.paused = True
     def start(self):
         self.paused = False
+
     def tick(self):
         if not self.paused:
             self.timer -= 1
             if self.timer <= 0:
                 self.timer = self.delay
                 self.command()
+
     def stop(self):
+        """Destroy looper from bit memory."""
         self.bit.removeLooper(self)
 
 def loadSavedBit(self, pickledBit, index):

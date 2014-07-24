@@ -14,6 +14,7 @@ pygame.init()
 
 # command to run on initialization
 INIT_STATEMENT = "runGraphics()"
+
 # use python profiler
 USE_PROFILER = False
 
