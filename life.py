@@ -13,7 +13,7 @@ import traceback
 class locals():
     class distanceLookup():
         RING_CACHE = 0
-        LISTER = 1
+        BIT_LISTER = 1
 
 # load up bit graphic asset names
 bitList = []
@@ -434,6 +434,7 @@ class Bit(object):
     index = property(getIndex)
 
     def makePickle(self):
+        """Return data in the form of a serialized, picklable data piece."""
         data = {}
         
         for key, value in vars(self).items():
@@ -451,7 +452,11 @@ class Bit(object):
 
         return data
 
-    def randomWalkTowardsType(self, bitName, searchRadius):
+    def randomWalkTowardsType(self, bitName, searchRadius, technique = locals.distanceLookup.RING_CACHE):
+        """
+        Randomly walk the bit slowly over to any bit of bitName within the search radius.
+        Technique is a class attribute of the life.locals.distanceLookup class.
+        """
         try:
             bit = random.choice(self.lookout(bitName, searchRadius))
             walkX = random.randrange(3) - 1
@@ -470,7 +475,11 @@ class Bit(object):
         except IndexError as e:
             return False
 
-    def randomWalkTowards(self, bit):
+    def randomWalkTowards(self, bit, technique = locals.distanceLookup.RING_CACHE):
+        """
+        Randomly walk the bit slowly over to the bit.
+        Technique is a class attribute of the life.locals.distanceLookup class.
+        """
         walkX = random.randrange(3) - 1
         walkY = random.randrange(3) - 1
         if self.x < bit.x:
@@ -486,6 +495,7 @@ class Bit(object):
         return self.move(walkX, walkY)
 
     def moveTowards(self, pos):
+        """Move the bit through a vector pointing to the position."""
         i = 0
         for dim in pos:
             if dim < -1:
@@ -495,7 +505,11 @@ class Bit(object):
 
         return self.vector.getAngleTowards(pos)
 
-    def lookout(self, bitName, searchRadius, technique = locals.RING_LOAD):
+    def lookout(self, bitName, searchRadius, technique = locals.distanceLookup.RING_CACHE):
+        """
+        Scan the area of searchRadius for a bit of bitName.  Technique is a 
+        class attribute of the life.locals.distanceLookup class.
+        """
         if not isinstance(bitName, str):
             bitName = bitName.name
 
@@ -507,26 +521,31 @@ class Bit(object):
             return [bit for bit in self.getList(bitName) if self.distance(bit) <= searchRadius]
 
     def addLooper(self, newLooper):
+        """Add the looper to the list of loopers."""
         if newLooper not in self.loopers:
             self.loopers.append(newLooper)
     def removeLooper(self, looper):
+        """Remove the looper from this bit."""
         if looper in self.loopers:
             self.loopers.remove(looper)
 
     def randomWalk(self):
+        """Move to a random adjacent valid tile."""
         self.moveto(random.choice(self.getAdjValids(allowNull = False)))
 
     def distance(self, distantBit):
+        """Get the distance to another bit using euclidean math."""
         return math.sqrt((self.x-distantBit.x)**2 + (self.y-distantBit.y)**2)
 
     def getAdjs(self, coord=None):
-        """ Return all adjacent coordinate sets """
+        """Return all adjacent coordinate sets """
         if not coord:
             coord = (self.x, self.y)
 
         return hexmech.getAdjs(self.x, self.y)
 
     def getAdjBits(self, coord=None):
+        """Return all adjacent bits."""
         if not coord:
             coord = (self.x, self.y)
         bits = []
@@ -540,6 +559,7 @@ class Bit(object):
         return bits
 
     def getAdjValids(self, coord=None, allowNull=True):
+        """Return all adjacent coordinate sets that are empty and valid."""
         if not coord:
             coord = (self.x, self.y)
             
@@ -555,11 +575,16 @@ class Bit(object):
         return newprod
 
     def moveForward(self):
+        """Move according to self.vector direction."""
         return self.moveto(self.vector.ahead)
     def moveBackward(self):
+        """Move according to the opposite of self.vector direction."""
         return self.moveto(self.vector.behind)
 
-    def getList(self, name):
+    def getList(self, name=None):
+        """Get the list of all bits of name.  If name is None, then the current name is used."""
+        if name == None:
+            name = self.name
         if name in __class__.lister:
             return __class__.lister[name]
         else:
@@ -567,6 +592,7 @@ class Bit(object):
             return []
         
     def destroy(self):
+        """Remove the bit from world and program memory."""
         Bit.world.removeBit(self)
         Bit.world.bitPositions[self.x][self.y] = 0
         Bit.world.markUpdate(self.x, self.y)
@@ -581,9 +607,11 @@ class Bit(object):
             looper.tick()
 
     def dirty(self):
+        """Mark the bit as a changed visible object."""
         self.world.markDirty(self)
     
     def moveto(self, x, y=None):
+        """Move the bit to a coordinate set.  Return bool based on success."""
         if y == None:
             y = x[1]
             x = x[0]
@@ -603,6 +631,7 @@ class Bit(object):
         return val
             
     def move(self, dx, dy=None):
+        """Move according to a coordinate vector.  Return bool based on success."""
         if dy == None:
             dy = dx[1]
             dx = dx[0]
