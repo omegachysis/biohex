@@ -84,7 +84,7 @@ class Ribosome(life.Bit):
                 self.vector.turnLeft()
 
             elif codon == 'm':
-                if self.moveto(self.vector.ahead):
+                if self.moveForward():
                     if not self.makeBit(bits.OrganelleMatrix, self.vector.behind):
                         self.frame -= 1
                         self.moveto(self.vector.behind)

@@ -24,7 +24,7 @@ class ProteinMembraneGrower(life.Bit):
     def tick(self):
         super().tick()
 
-        if self.moveto(self.vector.ahead):
+        if self.moveForward():
             
             if not self.makeBit(self.placingType, self.vector.behind):
                 self.die()
