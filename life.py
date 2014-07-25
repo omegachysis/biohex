@@ -71,6 +71,7 @@ class Looper(object):
         self.bit.removeLooper(self)
 
 def loadSavedBit(self, pickledBit, index):
+    """ Unpickle a serialized, pickled bit. """
     newBit = Bit(pickledBit['x'], pickledBit['y'])
     for variableName, value in pickledBit.items():
         if variableName != "index":
@@ -86,11 +87,33 @@ def loadSavedBit(self, pickledBit, index):
     newBit._ahead = pickledVector[1]
 
 class Bit(object):
+    """
+    The basic unit of matter in the Biohex simulations.
+    Represents a single hexagon in the world.  Only one
+    Bit can be in each tile at a given time.
+    """
     world = None
     name = "Test"
+
+    # stores a record of all bits, accessible to others.
+    # stored on a 'name' basis.
+    #  ex.: {"Test" : [Bit, Bit, ...], "Test 2" : [...]}
     lister = {}
 
+    # ENTHALPY acts as a simulated unit of energy.
+    #  Use a enthalpy looper to simulate a breakdown
+    #  without a constant source of energy.
+    #
+    #  --- Note: only presented as a constant to signify default
+    #       starting enthalpy.  Each Bit has its own 'enthalpy'
+    #       attribute that changes with time.
     ENTHALPY = 0
+
+    # ENTROPY acts as the simulated reality of
+    #  the breakdown of complex, organized compounds
+    #  into a more random state.  Use this as a guide
+    #  to make sure that all reactions that take
+    #  place result in total entropy increasing overall.
     ENTROPY = 0
     
     def __init__(self, x, y):
