@@ -11,8 +11,9 @@ import traceback
 
 # storage class for constants
 class locals():
-    RING_LOAD = 0
-    DISTANCE_SEARCH = 1
+    class distanceLookup():
+        RING_CACHE = 0
+        LISTER = 1
 
 # load up bit graphic asset names
 bitList = []
@@ -71,7 +72,7 @@ class Looper(object):
         self.bit.removeLooper(self)
 
 def loadSavedBit(self, pickledBit, index):
-    """ Unpickle a serialized, pickled bit. """
+    """Unpickle a serialized, pickled bit."""
     newBit = Bit(pickledBit['x'], pickledBit['y'])
     for variableName, value in pickledBit.items():
         if variableName != "index":
@@ -151,22 +152,36 @@ class Bit(object):
     position = property(getPosition, setPosition)
 
     def getRings(self, distance):
+        """Get all hexagon rings up to a distance around this bit's position."""
         return hexmech.getRings(self.x, self.y, distance)
 
     def getRing(self, distance):
+        """Get a hexagon ring at a distance around this bit's position."""
         return hexmech.getRing(self.x, self.y, distance)
 
     def die(self):
+        """Turn this bit into a Necrosis bit, prevserving current atoms and enthalpy."""
         self.becomeBit(bits.Necrosis, {}, True)
         
     def dieError(self):
+        """Turn this bit into a CausticNecrosis bit, signifiying a critical internal error."""
         self.becomeBit(bits.CausticNecrosis, {}, False)
 
-    def siphonEnthalpy(self, bitName, distance, amount=1, limit=None, technique=locals.RING_LOAD):
+    def siphonEnthalpy(self, bitName, distance, amount=1, limit=None, technique=locals.distanceLookup.RING_CACHE):
+        """
+        Extract enthalpy in stages of amount from bits of bitName from a certain distance.  A limit
+        can be set on the maximum level of enthalpy this bit should attempt to obtain before stopping.
+        Technique is a class attribute from the life.locals.distanceLookup class.
+        """
         for bit in self.lookout(bitName, distance, technique = technique):
             self._siphonEnthalpyBit(bit, amount, limit)
 
-    def siphonAtoms(self, bitName, distance, amount=[1,1,1], limit=None, technique=locals.RING_LOAD):
+    def siphonAtoms(self, bitName, distance, amount=[1,1,1], limit=None, technique=locals.distanceLookup.RING_CACHE):
+        """
+        Extract atoms in stages of amount from bits of bitName from a certain distance.  A limit
+        can be set on the maximum level of atoms this bit should attempt to obtain before stopping.
+        Technique is a class attribute from the life.locals.distanceLookup class.
+        """
         for bit in self.lookout(bitName, distance, technique = technique):
             self._siphonAtomsBit(bit, amount, limit)
 
@@ -191,12 +206,18 @@ class Bit(object):
         else:
             self.grabAtoms(bit, bit.atoms)
 
-    def siphonResources(self, bitName, distance, amountEnthalpy=1, amountAtoms=[1,1,1], limitEnthalpy=None, limitAtoms=None, technique=locals.RING_LOAD):
+    def siphonResources(self, bitName, distance, amountEnthalpy=1, amountAtoms=[1,1,1], limitEnthalpy=None, limitAtoms=None, technique=locals.distanceLookup.RING_CACHE):
+        """
+        Extract atoms and enthalpy in stages of amountEnthalpy and amountAtoms from bits of bitName from a certain distance.
+        A limit can be set on the maximum level of atoms or enthalpy this bit should attempt to obtain before stopping.
+        Technique is a class attribute from the life.locals.distanceLookup class.
+        """
         for bit in self.lookout(bitName, distance, technique = technique):
             self._siphonEnthalpyBit(bit, amountEnthalpy, limitEnthalpy)
             self._siphonAtomsBit(bit, amountAtoms, limitAtoms)
 
     def grabAtoms(self, bit, amount=[1,1,1]):
+        """Take atoms of amount from the bit.  Returns bool related to success of extraction."""
         amount = list(amount)
 
         condition = []
@@ -215,6 +236,7 @@ class Bit(object):
             return False
         
     def grabEnthalpy(self, bit, amount=1):
+        """Take enthalpy of amount from the bit.  Returns bool related to success of extraction."""
         if bit.enthalpy >= amount:
             bit.enthalpy -= amount
             self.enthalpy += amount
@@ -231,6 +253,10 @@ class Bit(object):
             return False
 
     def becomeBit(self, bitclass, args={}, saveEnthalpy=True):
+        """
+        Turn this current bit into another bit, prevserving atoms in the process and
+        optionally preserving enthalpy.  This will always be successful.
+        """
         self.destroy()
         
         # We know that this will be successful 100% of the time.
@@ -246,6 +272,13 @@ class Bit(object):
                          atoms = self.atoms)
             
     def becomeBits(self, bitclass, positions, args={}, saveEnthalpy=True):
+        """
+        Turn this current bit into multiple other bits, preserving atoms across
+        all of them in the process and optionally preserving enthalpy.  At the
+        end of the process, any remaining enthalpy or atoms from unsuccessful
+        positions will be placed into the bit replacing the bit at this current
+        position.
+        """
         self.destroy()
 
         filteredPositions = []
@@ -280,6 +313,14 @@ class Bit(object):
                          atoms = self.atoms)
 
     def makeBits(self, bitclass, positions, args=[], atoms=None, enthalpy=None):
+        """
+        Place multiple bits at positions, optionally giving that bit
+        a certain amount of atoms and enthalpy from this bit.  If atoms
+        and/or enthalpy amounts are not specified, the defaults inherited
+        from bitclass will be used.  Returns 
+        a list of bits placed if all the positions were valid.  If even
+        one placement fails, None is returned and no bits are created.
+        """
         filteredPositions = []
         # remove repeated positions
         for pos in positions:
@@ -331,7 +372,14 @@ class Bit(object):
         else:
             return None
 
-    def makeBit(self, bitclass, pos, args={}, atoms=None, enthalpy=None):
+    def makeBit(self, bitclass, position, args={}, atoms=None, enthalpy=None):
+        """
+        Place a bit at a new position, optionally giving that bit
+        a certain amount of atoms and enthalpy from this bit.  If atoms
+        and/or enthalpy amounts are not specified, the defaults inherited
+        from bitclass will be used.  Returns a placed bit if successful,
+        and returns None of the placement was not valid.
+        """ 
         if enthalpy == None:
             enthalpy = bitclass.ENTHALPY
         if atoms == None:
@@ -342,13 +390,13 @@ class Bit(object):
         if len([i for i in range(len(self.atoms)) if \
                 self.atoms[i] >= atoms[i]]) == len(self.atoms) and \
                 self.enthalpy >= enthalpy and \
-                not getBit(*pos):
+                not getBit(*position):
             for i in range(len(self.atoms)):
                 self.atoms[i] -= atoms[i]
                 
             self.enthalpy -= enthalpy
 
-            newBit = bitclass(pos[0], pos[1], **args)
+            newBit = bitclass(position[0], position[1], **args)
             newBit.enthalpy = enthalpy
             newBit.atoms = atoms
 
@@ -358,28 +406,31 @@ class Bit(object):
             return None
 
     def enthalpyDeath(self):
+        """Same as die().  Can be overridden for special enthalpy deaths."""
         self.die()
 
     def startEnthalpy(self, multiplier=10):
+        """Start an enthalpy looper with delay of multiplier ticks."""
         self.enthalpyLooper = Looper(self, self.enthalpyProgress, multiplier)
 
     def enthalpyUpdate(self):
+        """Cause enthalpy death if conditions are satisfied."""
         if self.enthalpy <= 0:
             self.enthalpyDeath()
             if self.enthalpyLooper:
                 self.enthalpyLooper.stop()
 
     def enthalpyProgress(self):
+        """Decrease enthalpy by one and call enthalpyUpdate()."""
         self.enthalpy -= 1
         self.enthalpyUpdate()
 
     def getIndex(self):
+        """Return index of bit in life.world.bits list."""
         if self in self.world.bits:
             return self.world.bits.index(self)
         else:
             return None
-    def setIndex(self, newIndex):
-        pass
     index = property(getIndex)
 
     def makePickle(self):
