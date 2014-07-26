@@ -638,12 +638,24 @@ class Bit(object):
         return self.moveto((self.x + dx, self.y + dy))
 
 class World(object):
+    """
+    Represents the virtual space that Bits can move
+    around in and interact with.
+    """
     def __init__(self, width, height, passErrors = False):
+        """
+        Initialize a world with width and height in hexagon tiles.
+        If passErrors is True, then when a Bit raises a fatal error,
+        instead of crashing, it will decay into a special marker
+        Bit and print the error in the command window.
+        """
+
         self.width = width
         self.height = height
 
         self.bits = []
 
+        # all the bits that have changed and need to be redrawn
         self.dirtyBits = []
         self.bitPositions = []
         for x in range(width):
@@ -652,12 +664,14 @@ class World(object):
                 col.append(0)
             self.bitPositions.append(col)
 
+        # all the positions that must be updated on the screen
         self.updatePositions = []
 
         self.passingErrors = passErrors
 
         Bit.world = self
 
+        # tracks age in ticks
         self.tickNumber = 0
 
     def getPassingErrors(self):
@@ -671,6 +685,7 @@ class World(object):
     passingErrors = property(getPassingErrors, setPassingErrors)
 
     def save(self, filename):
+        """Pickle entire current world experiment."""
         import pickle
         file = open(filename, 'wb')
         pickledBits = []
@@ -680,6 +695,7 @@ class World(object):
         file.close()
 
     def load(self, filename):
+        """Load a pickled world experiment."""
         import pickle
         file = open(filename, 'rb')
         pickledBits = pickle.load(file)
@@ -688,6 +704,10 @@ class World(object):
             loadSavedBit(pickle, index)
             index += 1
 
+    # these are not needed for this instance of a World
+    #  because they are graphical methods.  These are
+    #  overridden by a graphical version of the World
+    #  in graphics.py.
     def markDirty(self, bit): pass
     def unmarkDirty(self, bit): pass
     def markUpdate(self, x, y): pass
@@ -696,6 +716,7 @@ class World(object):
     #def drawEmpty(self, pos): None
 
     def erase(self, x, y):
+        """Destroy the bit at this position if there is one."""
         for bit in self.bits:
             if bit.x == x and bit.y == y:
                 bit.destroy()
