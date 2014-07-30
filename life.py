@@ -722,6 +722,7 @@ class World(object):
                 bit.destroy()
 
     def addBit(self, bit):
+        """If there is no bit in the bit's position, add the bit."""
         if bit not in self.bits and not getBit(bit.x, bit.y):
             try:
                 self.bitPositions[bit.x][bit.y] = bit
@@ -733,6 +734,7 @@ class World(object):
             return False
             
     def removeBit(self, bit):
+        """Destroy the bit and remove all memory access."""
         if bit in self.bits:
             self.bits.remove(bit)
             #self.drawEmpty((bit.x, bit.y))
