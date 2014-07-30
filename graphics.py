@@ -16,18 +16,27 @@ pygame.init()
 pygame.freetype.init()
 
 class Engine(object):
-    SCROLL_SPEED = 15
+    """Highest level pygame class to handle all program events."""
+
+    SCROLL_SPEED = 15 # how fast the virtual screen camera moves on arrow presses
     
     def __init__(self, screen, world, ticksPerSecond=30):
+        """
+        Initialize a new world engine.  Start with a screen 
+        and world already created.  'ticksPerSecond' defines
+        how many ticks occur on autorun per second.
+        """
+
         self.screen = screen
         self.world = world
 
         self.quitting = False
 
-        self.running = False
-        self.stepping = False
-        self.rendering = True
+        self.running = False        # auto-run enabled
+        self.stepping = False       # in a mode where only one tick is to occur and then a pause
+        self.rendering = True       # whether or not every tick is to be rendered
 
+        # load the icon that shows on the screen when entering performance mode ('p')
         self.performanceModeIcon = pygame.image.load("assets/PerformanceModeIcon.png").convert_alpha()
         self.performanceModeIcon.fill((255,255,255,100), special_flags=BLEND_RGBA_MULT)
         self.performanceModeIconWidth, self.performanceModeIconHeight = self.performanceModeIcon.get_size()
@@ -43,36 +52,56 @@ class Engine(object):
         self.quitting = True
 
     def mainloop(self):
+        # create master time-keeper
         clock = pygame.time.Clock()
 
+        # refresh the SDL screen surface
         self.screen.update()
 
+        # will store keyboard keys later in mainloop
         keys = []
         
         while not self.quitting:
             self.stepping = False
+
             for event in pygame.event.get():
+
                 if event.type == QUIT:
                     self.quit()
+
+                # a key has been pressed down on this frame
                 elif event.type == KEYDOWN:
                     if event.key == K_ESCAPE:
                         self.quit()
                     elif event.key == K_RETURN:
+                        # RETURN key toggles autorun
                         self.running = not self.running
                     elif event.key == K_SPACE:
+                        # SPACEBAR steps through individual ticks
                         self.stepping = True
                     elif event.key == K_1:
+                        # 1 key sets to 10 ticks per second
                         self.ticksPerSecond = 10
                     elif event.key == K_2:
+                        # 2 key sets to 20 ticks per second
                         self.ticksPerSecond = 20
                     elif event.key == K_3:
+                        # 3 key sets to 30 ticks per second
                         self.ticksPerSecond = 30
                     elif event.key == K_4:
+                        # 4 key removes the tick limit, rendering and ticking as fast as possible
                         self.ticksPerSecond = 0
 
                     elif event.key == K_p:
+                        # pressing the 'P' key goes into performance mode,
+                        # where only world calculations are made and no
+                        # rendering is done
+
                         self.rendering = not self.rendering
+
                         if self.rendering:
+                            # coming out of performance mode,
+                            # re-render the entire world
                             self.world.flush()
                         else:
                             self.screen.surface.fill((20,20,20), special_flags=BLEND_RGB_ADD)
