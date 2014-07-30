@@ -93,11 +93,11 @@ class Engine(object):
                             self.rendering = True
                                         
                     elif event.key == K_a:
-                        print("ATOMS IN EXPERIMENT: ", experiment.probeAtoms(self.world))
+                        print("ATOMS IN EXPERIMENT: ", self.world.experiment.probeAtoms())
                     elif event.key == K_e:
-                        print("ENTHALPY IN EXPERIMENT: ", experiment.probeEnthalpy(self.world))
+                        print("ENTHALPY IN EXPERIMENT: ", self.world.experiment.probeEnthalpy())
                     elif event.key == K_r:
-                        print("ENTROPY IN EXPERIMENT: ", experiment.probeEntropy(self.world))
+                        print("ENTROPY IN EXPERIMENT: ", self.world.experiment.probeEntropy())
           
             if self.running or self.stepping:
                 self.world.tick()         

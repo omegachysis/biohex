@@ -8,7 +8,7 @@ class Experiment(object):
     world = None
 
     def __init__(self, world=None):
-        self.world = None
+        Experiment.world = world
 
     def probeAtoms(self):
         """Return the total number of each atom in the world."""

@@ -8,6 +8,7 @@ import bits
 
 import math
 import traceback
+import experiment
 
 # storage class for constants
 class locals():
@@ -642,6 +643,9 @@ class World(object):
     Represents the virtual space that Bits can move
     around in and interact with.
     """
+
+    experiment = None
+
     def __init__(self, width, height, passErrors = False):
         """
         Initialize a world with width and height in hexagon tiles.
@@ -673,6 +677,9 @@ class World(object):
 
         # tracks age in ticks
         self.tickNumber = 0
+
+        # create new experiment object
+        self.experiment = experiment.Experiment(self)
 
     def getPassingErrors(self):
         return self._passingErrors
