@@ -1,11 +1,12 @@
 
-"""
-Provides access to the functions needed to monitor the details 
-of a given experiment.
-"""
-
 class Experiment(object):
+    """
+    Provides access to the functions needed to monitor the details 
+    of a given experiment.
+    """
+
     world = None
+
     def __init__(self, world=None):
         self.world = None
 
