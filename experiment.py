@@ -4,27 +4,32 @@ Provides access to the functions needed to monitor the details
 of a given experiment.
 """
 
-def probeAtoms(world):
-    """Return the total number of each atom in the world."""
-    atoms = []
-    for bit in world.bits:
-        if len(bit.atoms) > len(atoms):
-            for i in range(len(bit.atoms)-len(atoms)):
-                atoms.append(0)
-        for i in range(len(bit.atoms)):
-            atoms[i] += bit.atoms[i]
-    return atoms
+class Experiment(object):
+    world = None
+    def __init__(self, world=None):
+        self.world = None
 
-def probeEnthalpy(world):
-    """Return the total amount of enthalpy in the world."""
-    total = 0
-    for bit in world.bits:
-        total += bit.enthalpy
-    return total
+    def probeAtoms(self):
+        """Return the total number of each atom in the world."""
+        atoms = []
+        for bit in self.world.bits:
+            if len(bit.atoms) > len(atoms):
+                for i in range(len(bit.atoms)-len(atoms)):
+                    atoms.append(0)
+            for i in range(len(bit.atoms)):
+                atoms[i] += bit.atoms[i]
+        return atoms
 
-def probeEntropy(world):
-    """Return the total amount of entropy in the world."""
-    total = 0
-    for bit in world.bits:
-        total += bit.ENTROPY
-    return total
+    def probeEnthalpy(self):
+        """Return the total amount of enthalpy in the world."""
+        total = 0
+        for bit in self.world.bits:
+            total += bit.enthalpy
+        return total
+
+    def probeEntropy(self):
+        """Return the total amount of entropy in the world."""
+        total = 0
+        for bit in self.world.bits:
+            total += bit.ENTROPY
+        return total
