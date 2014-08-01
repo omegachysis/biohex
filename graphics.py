@@ -104,7 +104,12 @@ class Engine(object):
                             # re-render the entire world
                             self.world.flush()
                         else:
+                            # going into performance mode
+                            # render graphics for that, now
+
+                            # brighten the whole screen by 20 pixels in each color
                             self.screen.surface.fill((20,20,20), special_flags=BLEND_RGB_ADD)
+                            # render mode image icon with text label
                             self.screen.surface.blit(self.performanceModeIcon, self.performanceModeIconPos)
                             self.screen.renderText("Performance Mode Enabled", (128,0,0))
                             self.screen.update()
@@ -115,24 +120,29 @@ class Engine(object):
                                         self.quit()
                                     elif event.type == KEYDOWN:
                                         if event.key == K_ESCAPE or event.key == K_p:
-                                            self.rendering = True      
+                                            self.rendering = True
+                            # render the whole world, this can take a while   
                             self.world.flush()
                             self.rendering = True
                                         
-                    elif event.key == K_a:
+                    elif event.key == K_a: # display all counts of atoms in console window
                         print("ATOMS IN EXPERIMENT: ", self.world.experiment.probeAtoms())
-                    elif event.key == K_e:
+                    elif event.key == K_e: # display total enthalpy in console window
                         print("ENTHALPY IN EXPERIMENT: ", self.world.experiment.probeEnthalpy())
-                    elif event.key == K_r:
+                    elif event.key == K_r: # display total entropy in console window
                         print("ENTROPY IN EXPERIMENT: ", self.world.experiment.probeEntropy())
           
             if self.running or self.stepping:
+                # run a simulation tick
                 self.world.tick()         
 
                 if self.rendering:
+                    # redraw tiles that have been made empty
                     self.world.drawEmptyUpdates()
+                    # draw bits that have changed or moved
                     self.world.drawDirtyBits()
 
+                    # draw the final screen canvas to the pygame display
                     self.screen.writeCanvas()
                     self.screen.update()
 
