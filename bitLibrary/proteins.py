@@ -61,7 +61,7 @@ class ProteinCellMembrane(life.Bit):
 
         self.siphonResources("Lipid", 20, amountEnthalpy=self.ENTHALPY, amountAtoms=self.ATOMS,
                              limitEnthalpy=self.ENTHALPY*5, limitAtoms=[i*5 for i in self.ATOMS],
-                             technique=life.locals.RING_LOAD)
+                             technique=life.locals.distanceLookup.RING_CACHE)
 
         if self.enthalpy >= self.ENTHALPY * 5:
             self.multiply()

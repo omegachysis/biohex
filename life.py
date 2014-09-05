@@ -514,7 +514,7 @@ class Bit(object):
         if not isinstance(bitName, str):
             bitName = bitName.name
 
-        if technique == locals.RING_LOAD:
+        if technique == locals.distanceLookup.RING_CACHE:
             return [getBit(*i) for i in self.getRings(searchRadius) if getBit(*i) and \
                 getBit(*i).name == bitName]
 
