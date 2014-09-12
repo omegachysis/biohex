@@ -1,6 +1,6 @@
 
-from biohex import life
-from biohex import bits
+import life
+import bits
 import random
 
 class ProteinMembraneGrower(life.Bit):

@@ -8,6 +8,8 @@ import graphics
 import traceback
 import random
 
+import sys
+
 import bitLibrary
 
 pygame.init()
@@ -93,4 +95,3 @@ if __name__ == "__main__":
         main( USE_PROFILER )
     except:
         print(traceback.format_exc())
-        input()

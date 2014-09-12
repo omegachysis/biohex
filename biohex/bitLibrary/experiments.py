@@ -1,6 +1,6 @@
 
-from biohex import life
-from biohex import bits
+import life
+import bits
 
 class Test(life.Bit):
     ATOMS = [0,0,0]

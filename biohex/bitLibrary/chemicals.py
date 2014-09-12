@@ -1,6 +1,6 @@
 
-from biohex import life
-from biohex import bits
+import life
+import bits
 
 class AminoAcid(life.Bit):
     """ Used as a building block for life. """
