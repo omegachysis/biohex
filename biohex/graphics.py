@@ -9,6 +9,7 @@ import traceback
 import hexmech
 import life
 import bits
+import ui
 
 import experiment
 
@@ -27,8 +28,11 @@ class Engine(object):
         how many ticks occur on autorun per second.
         """
 
+        self.pygameDisplay = pygame.display
+
         self.screen = screen
         self.world = world
+        self.ui = ui.UI(self)
 
         self.quitting = False
 
@@ -123,6 +127,7 @@ class Engine(object):
                                             self.rendering = True
                             # render the whole world, this can take a while   
                             self.world.flush()
+                            self.ui.render()
                             self.rendering = True
                                         
                     elif event.key == K_a: # display all counts of atoms in console window
@@ -144,6 +149,10 @@ class Engine(object):
 
                     # draw the final screen canvas to the pygame display
                     self.screen.writeCanvas()
+
+                    # draw the ui over all that
+                    self.ui.render()
+
                     self.screen.update()
 
                     clock.tick(self.ticksPerSecond)
@@ -161,6 +170,9 @@ class Engine(object):
 
                 self.screen.surface.fill((255,255,255))
                 self.screen.writeCanvas()
+
+                self.ui.render()
+
                 self.screen.update()
 
                 clock.tick(60)
