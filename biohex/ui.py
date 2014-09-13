@@ -4,7 +4,9 @@ from pygame import locals
 import pygame
 
 class UI(object):
-    HEIGHT = 30
+    HEIGHT = 20
+    STATUS_BACKGROUND_COLOR = (30,30,30)
+    STATUS_TEXT_COLOR = (210,210,210)
 
     def __init__(self, engine):
         self.engine = engine
@@ -16,22 +18,23 @@ class UI(object):
 
     def _renderStatusValue(self, value, posPercent):
         valueSurface, valueRect = self.font.render(
-            value, (255,255,255), (0,0,0))
+            value, UI.STATUS_TEXT_COLOR, UI.STATUS_BACKGROUND_COLOR)
 
         valueRect.centery = self.statusBarTextY
-        valueRect.centerx = self.engine.screen.height * posPercent
+        valueRect.centerx = self.engine.screen.width * posPercent
 
         self.engine.screen.surface.blit(valueSurface, valueRect)
 
     def render(self):
         # render a partially transparent black bar for the status bar
-        self.engine.screen.surface.fill((0,0,0),
-                                            (0, self.engine.screen.height-UI.HEIGHT,
-                                             self.engine.screen.width, UI.HEIGHT))
+        self.engine.screen.surface.fill(UI.STATUS_BACKGROUND_COLOR,
+                                        (0, self.engine.screen.height-UI.HEIGHT,
+                                         self.engine.screen.width, UI.HEIGHT))
 
         self._renderStatusValue("\u03A3 ENTHALPY = " + str(self.engine.world.experiment.probeEnthalpy()),
-                                0.20)
-
+                                0.30)
+        self._renderStatusValue("\u03A3 ENTROPY = " + str(self.engine.world.experiment.probeEntropy()),
+                                0.70)
 
 
 
