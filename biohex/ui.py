@@ -21,7 +21,7 @@ class UI(object):
             value, UI.STATUS_TEXT_COLOR, UI.STATUS_BACKGROUND_COLOR)
 
         valueRect.centery = self.statusBarTextY
-        valueRect.centerx = self.engine.screen.width * posPercent
+        valueRect.left = self.engine.screen.width * posPercent
 
         self.engine.screen.surface.blit(valueSurface, valueRect)
 
@@ -32,9 +32,10 @@ class UI(object):
                                          self.engine.screen.width, UI.HEIGHT))
 
         self._renderStatusValue("\u03A3 ENTHALPY = " + str(self.engine.world.experiment.probeEnthalpy()),
-                                0.30)
+                                0.40)
         self._renderStatusValue("\u03A3 ENTROPY = " + str(self.engine.world.experiment.probeEntropy()),
                                 0.70)
+        self._renderStatusValue("TIME = " + str(self.engine.world.tickNumber), 0.10)
 
 
 
