@@ -61,7 +61,10 @@ def runGraphics():
     random.seed(SEED)
 
     # RNA for ribosome.  details in bitLibrary.organelles.Ribosome
-    RNA = "Ag" + chr(10) + chr(15) + "m" * 15 + "rrrg" + chr(10) + chr(15) + "Q"
+
+    # the first set of data is epigenetic data
+    RNA = "{00" + "a"    + "b"     + "$" * 15 + "0000" + "a"    + "b"     + "0" + "}" + \
+           "Ag" + chr(5) + chr(15) + "m" * 15 + "rrrg" + chr(5) + chr(15) + "Q"
 
     DNA = bitLibrary.functions._convertRNA(RNA)
     print("DNA: ", DNA)

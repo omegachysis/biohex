@@ -29,8 +29,15 @@ class Ribosome(life.Bit):
         super().__init__(x,y)
 
         self.rna = bits.functions._convertDNA(dna)
-        self.codeType = self.rna[0]
-        self.frame = 1
+        self.frame = 0
+
+        if self.rna[0] == "{":
+            while self.rna[self.frame] != "}":
+                self.frame += 1
+        self.frame += 1
+
+        self.codeType = self.rna[self.frame]
+        self.frame += 1
 
         self.chemicalIdentifier = random.randrange(0,100000)
 
@@ -47,11 +54,11 @@ class Ribosome(life.Bit):
             
             if codon == 'g':
                 self.frame += 1
-                codonArg = self.rna[self.frame]
+                codonArg1 = self.rna[self.frame]
                 self.frame += 1
                 codonArg2 = self.rna[self.frame]
 
-                growthAmount = ord(codonArg)
+                growthAmount = ord(codonArg1)
                 giveAtoms = [i * growthAmount * 2 for i in bits.ProteinCellMembrane.ATOMS]
                 giveEnthalpy = bits.ProteinCellMembrane.ENTHALPY * growthAmount * 2
 
