@@ -129,7 +129,6 @@ class Vector(object):
     angle = property(getAngle, setAngle)
 
 def loadRing(distance, set):
-    print("LOADING RING")
     try:
         file = open("assets/ringCache/{},{}.ringdat".format(distance, set), "rb")
         return pickle.load(file)
