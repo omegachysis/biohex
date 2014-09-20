@@ -424,6 +424,7 @@ class Bit(object):
     def enthalpyProgress(self):
         """Decrease enthalpy by one and call enthalpyUpdate()."""
         self.enthalpy -= 1
+        self.world.thermalTransfer(self.x, self.y, 1)
         self.enthalpyUpdate()
 
     def getIndex(self):
@@ -657,7 +658,11 @@ class World(object):
         self.width = width
         self.height = height
 
+        self.area = self.width * self.height
+
         self.bits = []
+        self.thermalData = []
+        self.setAmbientTemperature(0)
 
         # all the bits that have changed and need to be redrawn
         self.dirtyBits = []
@@ -680,6 +685,22 @@ class World(object):
 
         # create new experiment object
         self.experiment = experiment.Experiment(self)
+
+    def getTemp(self, x, y):
+        return self.thermalData[y][x]
+    def setTemp(self, x, y, value):
+        self.thermalData[y][x] = value
+
+    def setAmbientTemperature(self, temperature):
+        self.thermalData = []
+        for y in range(self.height):
+            self.thermalData.append([temperature] * self.width)
+        self.thermalDelta = 0
+        self.ambientTemperature = temperature
+
+    def thermalTransfer(self, x, y, amount):
+        self.thermalData[y][x] += amount
+        self.thermalDelta += amount
 
     def getPassingErrors(self):
         return self._passingErrors

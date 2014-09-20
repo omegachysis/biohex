@@ -19,12 +19,15 @@ class UI(object):
 
         self.statusHelperText = ""
 
-    def _renderStatusValue(self, value, posPercent):
+    def _renderStatusValue(self, value, posPercent, rightAligned=False):
         valueSurface, valueRect = self.font.render(
             value, UI.STATUS_TEXT_COLOR, UI.STATUS_BACKGROUND_COLOR)
 
         valueRect.centery = self.STATUS_BAR_TEXT_Y
-        valueRect.left = self.engine.screen.width * posPercent
+        if not rightAligned:
+            valueRect.left = self.engine.screen.width * posPercent
+        else:
+            valueRect.right = self.engine.screen.width * posPercent
 
         self.engine.screen.surface.blit(valueSurface, valueRect)
 
@@ -45,6 +48,10 @@ class UI(object):
         self._renderStatusValue("\u03A3 ENTROPY = " + str(self.engine.world.experiment.probeEntropy()),
                                 0.35)
         self._renderStatusValue("TIME = " + str(self.engine.world.tickNumber), 0.05)
+        self._renderStatusValue("\u0394 THERMAL = " + str(self.engine.world.experiment.probeThermalEnergy()),
+                                0.50)
+        self._renderStatusValue("\u03BC TEMP = " + str(self.engine.world.experiment.probeTemperature()),
+                                0.65)
 
         mousex, mousey = pygame.mouse.get_pos()
         if mousex > wrenchRect.left and mousex < wrenchRect.right and \
@@ -54,5 +61,5 @@ class UI(object):
         else:
             self.statusHelperText = ""
 
-        self._renderStatusValue(self.statusHelperText, 0.70)
+        self._renderStatusValue(self.statusHelperText, 0.98, rightAligned = True)
 

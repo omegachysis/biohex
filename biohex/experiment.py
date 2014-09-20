@@ -1,4 +1,6 @@
 
+import life
+
 class Experiment(object):
     """
     Provides access to the functions needed to monitor the details 
@@ -9,6 +11,13 @@ class Experiment(object):
 
     def __init__(self, world=None):
         Experiment.world = world
+        self.world = world
+
+    def probeThermalEnergy(self):
+        return self.world.thermalDelta
+
+    def probeTemperature(self):
+        return round(self.world.thermalDelta / self.world.area + self.world.ambientTemperature, 3)
 
     def probeAtoms(self):
         """Return the total number of each atom in the world."""
