@@ -37,8 +37,8 @@ def runGraphics():
     RES_HEIGHT = 720
 
     # world width and height in hexagons
-    WORLD_WIDTH = 400
-    WORLD_HEIGHT = 200
+    WORLD_WIDTH = 200
+    WORLD_HEIGHT = 100
     
     FULLSCREEN = False
 
@@ -71,7 +71,7 @@ def runGraphics():
 
     bits.Ribosome(50, 40, DNA)
 
-    world.setAmbientTemperature(50)
+    world.setAmbientTemperature(90)
 
     for i in range(150):
         bits.Lipid(random.randrange(WORLD_WIDTH),

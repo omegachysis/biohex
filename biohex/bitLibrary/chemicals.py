@@ -27,6 +27,20 @@ class Water(life.Bit):
     def tick(self):
         self.randomWalk()
 
+class DenaturedNecrosis(life.Bit):
+    ATOMS = [0,0,0]
+
+    ENTROPY = 4
+    ENTHALPY = 0
+
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+        life.Looper(self, self.randomWalk, 5)
+
+    def tick(self):
+        super().tick()
+
 class Necrosis(life.Bit):
     ATOMS = [0,0,0]
 

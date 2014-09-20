@@ -117,6 +117,13 @@ class Bit(object):
     #  to make sure that all reactions that take
     #  place result in total entropy increasing overall.
     ENTROPY = 0
+
+    # THERMAL_RANGE is a two-element list
+    # where the minimum temperature is first
+    # and the maximum is second.  The bit will die
+    # if the temperature at its location becomes
+    # too high.  Set to None for no temperature breakdown.
+    THERMAL_RANGE = None
     
     def __init__(self, x, y):
         self.name = self.__class__.__name__
@@ -163,6 +170,10 @@ class Bit(object):
     def die(self):
         """Turn this bit into a Necrosis bit, prevserving current atoms and enthalpy."""
         self.becomeBit(bits.Necrosis, {}, True)
+
+    def dieThermal(self):
+        """Turn this bit into a DenaturedNecrosis bit, signifying that it overheated."""
+        self.becomeBit(bits.DenaturedNecrosis, {}, True)
         
     def dieError(self):
         """Turn this bit into a CausticNecrosis bit, signifiying a critical internal error."""
@@ -252,6 +263,21 @@ class Bit(object):
             return True
         else:
             return False
+
+    def checkTemperature(self):
+        if self.THERMAL_RANGE:
+            if self.world.getTemp(self.x, self.y) < self.THERMAL_RANGE[0] or \
+                self.world.getTemp(self.x, self.y) > self.THERMAL_RANGE[1]:
+                self.dieThermal()
+
+    def tempRange(self, min, max):
+        """Returns 1 if below minimum, returns 2 if above max, returns 0 if in range."""
+        if self.world.getTemp(self.x, self.y) < min:
+            return 1
+        elif self.world.getTemp(self.x, self.y) > max:
+            return 2
+        else:
+            return 0
 
     def becomeBit(self, bitclass, args={}, saveEnthalpy=True):
         """
@@ -426,6 +452,7 @@ class Bit(object):
         self.enthalpy -= 1
         self.world.thermalTransfer(self.x, self.y, 1)
         self.enthalpyUpdate()
+        self.checkTemperature()
 
     def getIndex(self):
         """Return index of bit in life.world.bits list."""
@@ -630,6 +657,8 @@ class Bit(object):
             
         Bit.world.bitPositions[self.x][self.y] = self
 
+        self.checkTemperature()
+
         return val
             
     def move(self, dx, dy=None):
@@ -690,6 +719,11 @@ class World(object):
         return self.thermalData[y][x]
     def setTemp(self, x, y, value):
         self.thermalData[y][x] = value
+
+    def ambientTemperatureAdjust(self, amount):
+        for y in range(self.height):
+            for x in range(self.width):
+                self.thermalData[y][x] += amount
 
     def setAmbientTemperature(self, temperature):
         self.thermalData = []
