@@ -676,6 +676,9 @@ class World(object):
 
     experiment = None
 
+    AMBIENT_COOLING_FACTOR = 0.01
+    _AMBIENT_TEMPERATURE_COOLING_DELAY = 10
+
     def __init__(self, width, height, passErrors = False):
         """
         Initialize a world with width and height in hexagon tiles.
@@ -692,6 +695,8 @@ class World(object):
         self.bits = []
         self.thermalData = []
         self.setAmbientTemperature(0)
+
+        self._ambientTemperatureCoolingWait = 0
 
         # all the bits that have changed and need to be redrawn
         self.dirtyBits = []
@@ -724,6 +729,13 @@ class World(object):
         for y in range(self.height):
             for x in range(self.width):
                 self.thermalData[y][x] += amount
+
+    def ambientCooling(self, factor=AMBIENT_COOLING_FACTOR):
+        for y in range(self.height):
+            for x in range(self.width):
+                diff = self.thermalData[y][x] - self.ambientTemperature
+                self.thermalData[y][x] -= diff * factor
+                self.thermalDelta -= diff * factor
 
     def setAmbientTemperature(self, temperature):
         self.thermalData = []
@@ -813,10 +825,17 @@ class World(object):
                 print(traceback.format_exc())
                 print("----------------------------\n")
                 bit.dieError()
+        self._ambientTemperatureCoolingWait -= 1
+        if self._ambientTemperatureCoolingWait <= 0:
+            self.ambientCooling()
+            self._ambientTemperatureCoolingWait = self._AMBIENT_TEMPERATURE_COOLING_DELAY
                 
     def tickNonPassErrors(self):
         self.tickNumber += 1
         for bit in self.bits:
             bit.tick()
+        if self._ambientTemperatureCoolingWait <= 0:
+            self.ambientCooling()
+            self._ambientTemperatureCoolingWait = self._AMBIENT_TEMPERATURE_COOLING_DELAY
 
     def tick(self): pass
