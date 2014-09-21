@@ -47,7 +47,7 @@ class ProteinCellMembrane(life.Bit):
     ENTROPY = 2
     ENTHALPY = 3
 
-    THERMAL_RANGE = [70,120]
+    THERMAL_RANGE = [30,70]
 
     def __init__(self, x, y):
         super().__init__(x,y)

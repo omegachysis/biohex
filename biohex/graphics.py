@@ -6,10 +6,12 @@ import random
 import math
 
 import traceback
+
 import hexmech
 import life
 import bits
 import ui
+import thermal
 
 import experiment
 
@@ -146,6 +148,8 @@ class Engine(object):
                     self.world.drawEmptyUpdates()
                     # draw bits that have changed or moved
                     self.world.drawDirtyBits()
+
+                    self.world.drawThermalView()
 
                     # draw the final screen canvas to the pygame display
                     self.screen.writeCanvas()
@@ -293,6 +297,17 @@ class World(life.World):
         self._emptyBit = pygame.image.load("bitGraphics/_empty.png").convert()
         self._emptyBit.set_colorkey((255,255,255))
 
+        blankThermalImage = pygame.image.load("assets/thermometerBlank.png").convert()
+
+        self.thermalImages = []
+        for color in thermal.thermscale:
+            newThermalImage = blankThermalImage.convert()
+            #newThermalImage.set_colorkey((255,255,255), pygame.locals.RLEACCEL)
+            newThermalImage.fill(color, special_flags = pygame.locals.BLEND_RGB_MULT)
+            self.thermalImages.append(newThermalImage)
+
+        self.thermalViewingWindow = ((30,70), (30,50))
+
     def _loadBitSurfaces(self):
         for bitName in life.bitList:
             surface = pygame.image.load("bitGraphics/" + bitName + ".png").convert()
@@ -311,6 +326,17 @@ class World(life.World):
         self.dirtyBits = []
 
         self.loadingScreen = None
+
+    def drawThermal(self, x, y):
+        temp = self.thermalData[y][x]
+        if int(temp / 1.5) < len(self.thermalImages):
+            self.screen.blit(self.thermalImages[int(temp/1.5)], hexmech.coordsToPixels(x, y))
+
+    def drawThermalView(self):
+        for y in range(self.thermalViewingWindow[1][1] - self.thermalViewingWindow[1][0]):
+            for x in range(self.thermalViewingWindow[0][1] - self.thermalViewingWindow[0][0]):
+                self.drawThermal(x + self.thermalViewingWindow[0][0],
+                                 y + self.thermalViewingWindow[1][0])
 
     def drawBit(self, bit):
         self.screen.blit(self._bitSurfaces[bit.name], hexmech.coordsToPixels(bit.x, bit.y))

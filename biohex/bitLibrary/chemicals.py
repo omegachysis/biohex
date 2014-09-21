@@ -43,7 +43,6 @@ class DenaturedNecrosis(life.Bit):
 
 class Necrosis(life.Bit):
     ATOMS = [0,0,0]
-
     ENTROPY = 4
     ENTHALPY = 0
 
@@ -51,6 +50,7 @@ class Necrosis(life.Bit):
         super().__init__(x,y)
 
         life.Looper(self, self.randomWalk, 5)
+        self.startEnthalpy(500)
 
     def tick(self):
         super().tick()

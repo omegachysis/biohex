@@ -71,7 +71,7 @@ def runGraphics():
 
     bits.Ribosome(50, 40, DNA)
 
-    world.setAmbientTemperature(90)
+    world.setAmbientTemperature(38)
 
     for i in range(150):
         bits.Lipid(random.randrange(WORLD_WIDTH),

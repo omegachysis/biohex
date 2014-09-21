@@ -450,7 +450,8 @@ class Bit(object):
     def enthalpyProgress(self):
         """Decrease enthalpy by one and call enthalpyUpdate()."""
         self.enthalpy -= 1
-        self.world.thermalTransfer(self.x, self.y, 1)
+        self.world.thermalTransfer(self.x, self.y, amount=.75, fuzzy=0)
+        self.world.thermalTransfer(self.x, self.y, amount=.25, fuzzy=1)
         self.enthalpyUpdate()
         self.checkTemperature()
 
@@ -676,7 +677,7 @@ class World(object):
 
     experiment = None
 
-    AMBIENT_COOLING_FACTOR = 0.01
+    AMBIENT_COOLING_FACTOR = 0.001
     _AMBIENT_TEMPERATURE_COOLING_DELAY = 10
 
     def __init__(self, width, height, passErrors = False):
@@ -744,7 +745,10 @@ class World(object):
         self.thermalDelta = 0
         self.ambientTemperature = temperature
 
-    def thermalTransfer(self, x, y, amount):
+    def thermalTransfer(self, x, y, amount, fuzzy=0):
+        if fuzzy:
+            x += random.randint(-fuzzy, fuzzy)
+            y += random.randint(-fuzzy, fuzzy)
         self.thermalData[y][x] += amount
         self.thermalDelta += amount
 
