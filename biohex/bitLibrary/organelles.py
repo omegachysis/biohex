@@ -24,6 +24,8 @@ class Ribosome(biohex.life.Bit):
     ENTROPY = 1
     ENTHALPY = 1000
 
+    REPORT = ["frame", "matrixEpigene", "codeType", "chemicalIdentifier"]
+
     def __init__(self, x, y, dna):
         super().__init__(x,y)
 
@@ -47,6 +49,8 @@ class Ribosome(biohex.life.Bit):
         codon = self.rna[self.frame]
         
         if self.codeType == 'A':
+            if not hasattr(self, "matrixEpigene"):
+                self.matrixEpigene = 0
             
             if codon == 'g':
                 self.frame += 1
@@ -88,9 +92,13 @@ class Ribosome(biohex.life.Bit):
 
             elif codon == 'm':
                 if self.moveForward():
-                    if not self.makeBit(biohex.bits.OrganelleMatrix, self.vector.behind):
+                    newMatrix = self.makeBit(biohex.bits.OrganelleMatrix, self.vector.behind)
+                    if not newMatrix:
                         self.frame -= 1
                         self.moveto(self.vector.behind)
+                    else:
+                        newMatrix.epigene = self.matrixEpigene
+                        self.matrixEpigene += 1
 
             elif codon == ' ':
                 self.moveto(self.vector.ahead)

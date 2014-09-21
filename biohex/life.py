@@ -344,7 +344,7 @@ class Bit(object):
             self.makeBit(bitclass, self.position, args[-1], enthalpy = None,
                          atoms = self.atoms)
 
-    def makeBits(self, bitclass, positions, args=[], atoms=None, enthalpy=None):
+    def makeBits(self, bitclass, positions, args={}, atoms=None, enthalpy=None):
         """
         Place multiple bits at positions, optionally giving that bit
         a certain amount of atoms and enthalpy from this bit.  If atoms
