@@ -51,7 +51,7 @@ class ProteinCellMembraneDouble(biohex.life.Bit):
     def __init__(self, x, y):
         super().__init__(x,y)
 
-        self.startEnthalpy(random.randrange(400,500))
+        self.startEnthalpy(700)
 
     def tick(self):
         super().tick()
@@ -77,9 +77,10 @@ class ProteinCellMembrane(biohex.life.Bit):
     def enthalpyProgress(self):
         super().enthalpyProgress()
 
-        self.siphonResources("Lipid", 20, amountEnthalpy=self.ENTHALPY, amountAtoms=self.ATOMS,
-                             limitEnthalpy=self.ENTHALPY*6, limitAtoms=[i*6 for i in self.ATOMS],
-                             technique=biohex.life.locals.distanceLookup.RING_CACHE)
+        for i in ["Lipid", "ATP"]:
+            self.siphonResources(i, 10, amountEnthalpy=self.ENTHALPY*6, amountAtoms=[i*6 for i in self.ATOMS],
+                                 limitEnthalpy=self.ENTHALPY*6, limitAtoms=[i*6 for i in self.ATOMS],
+                                 technique=biohex.life.locals.distanceLookup.RING_CACHE)
 
         if self.enthalpy >= self.ENTHALPY * 6:
             self.multiply()
@@ -103,6 +104,7 @@ class ProteinConnectiveMembrane(biohex.life.Bit):
         super().enthalpyProgress()
         
         self.siphonEnthalpy("Lipid", 20, amount = 5, limit = 5)
+        self.siphonEnthalpy("ATP",   10, amount = 5, limit = 5)
 
     def tick(self):
         super().tick()

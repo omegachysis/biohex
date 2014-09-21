@@ -56,7 +56,7 @@ def runGraphics():
     life.Bit.world = world
     
     # random seed to start the world
-    SEED = 0
+    SEED = 1
 
     random.seed(SEED)
 
@@ -71,7 +71,7 @@ def runGraphics():
 
     world.setAmbientTemperature(25)
 
-    for i in range(150):
+    for i in range(200):
         bits.Lipid(random.randrange(WORLD_WIDTH),
                    random.randrange(WORLD_HEIGHT))
     for i in range(150):

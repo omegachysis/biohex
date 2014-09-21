@@ -2,6 +2,20 @@
 import random
 import biohex
 
+class GolgiComplex(biohex.life.Bit):
+    ATOMS = [1,1,1]
+
+    ENTROPY = 2
+    ENTHALPY = 10
+
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+        self.startEnthalpy(500)
+
+    def tick(self):
+        super().tick()
+
 class OrganelleMatrix(biohex.life.Bit):
     ATOMS = [1,1,1]
 
@@ -13,8 +27,20 @@ class OrganelleMatrix(biohex.life.Bit):
 
         self.startEnthalpy(100)
 
+        self.epigene = 0
+
+    def getEpigene(self):
+        return self._epigene
+    def setEpigene(self, value):
+        self._epigene = value
+        self.epicode = value % 10
+    epigene = property(getEpigene, setEpigene)
+
     def tick(self):
         super().tick()
+
+        if self.epicode == 0:
+            self.becomeBit(GolgiComplex, {}, True)
 
 class Ribosome(biohex.life.Bit):
     """ Turns genetic code and raw materials into proteins. """
@@ -104,7 +130,7 @@ class Ribosome(biohex.life.Bit):
                 self.moveto(self.vector.ahead)
                     
             elif codon == 'Q':
-                self.becomeBits(biohex.bits.Lipid, self.getAdjValids(), {}, True)
+                self.becomeBits(biohex.bits.ATP, self.getAdjValids(), {}, True)
 
             else:
                 self.frame += 1

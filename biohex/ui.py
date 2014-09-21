@@ -42,15 +42,18 @@ class UI(object):
         wrenchRect.right = self.engine.screen.width - 5
         self.engine.screen.surface.blit(wrenchSurface, wrenchRect)
 
+        self._renderStatusValue("TIME = " + str(self.engine.world.tickNumber),
+                                0.01)
         self._renderStatusValue("\u03A3 ENTHALPY = " + str(self.engine.world.experiment.probeEnthalpy()),
-                                0.20)
+                                0.10)
         self._renderStatusValue("\u03A3 ENTROPY = " + str(self.engine.world.experiment.probeEntropy()),
-                                0.35)
-        self._renderStatusValue("TIME = " + str(self.engine.world.tickNumber), 0.05)
+                                0.22)
         self._renderStatusValue("\u0394 THERMAL = " + str(self.engine.world.experiment.probeThermalEnergy()),
-                                0.50)
+                                0.34)
         self._renderStatusValue("\u03BC TEMP = " + str(self.engine.world.experiment.probeTemperature()),
-                                0.65)
+                                0.46)
+        self._renderStatusValue("\u03A3 ATOMS = " + str(self.engine.world.experiment.probeAtoms()),
+                                0.58)
 
         mousex, mousey = pygame.mouse.get_pos()
         if mousex > wrenchRect.left and mousex < wrenchRect.right and \

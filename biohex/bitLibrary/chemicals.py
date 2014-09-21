@@ -1,6 +1,32 @@
 
 import biohex
 
+class ATP(biohex.life.Bit):
+    ATOMS = [5,5,5]
+
+    ENTROPY = 4
+    ENTHALPY = 30
+
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+    def enthalpyDeath(self):
+        self.becomeBit(ADP)
+
+    def tick(self):
+        self.randomWalk()
+
+class ADP(biohex.life.Bit):
+    ATOMS = [5,5,5]
+    ENTROPY = 5
+    ENTHALPY = 0
+
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+    def tick(self):
+        self.randomWalk()
+
 class AminoAcid(biohex.life.Bit):
     """ Used as a building block for life. """
     ATOMS = [7,6,2]
@@ -57,7 +83,7 @@ class LipidSalt(biohex.life.Bit):
     ATOMS = [5,5,1]
 
     ENTROPY = 5
-    ENTHALPY = 10
+    ENTHALPY = 0
 
     def __init__(self, x, y):
         super().__init__(x,y)
@@ -71,7 +97,7 @@ class Lipid(biohex.life.Bit):
     ATOMS = [5,5,1]
 
     ENTROPY = 4
-    ENTHALPY = 50
+    ENTHALPY = 100
 
     def __init__(self, x, y):
         super().__init__(x,y)
