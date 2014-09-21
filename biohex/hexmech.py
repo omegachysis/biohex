@@ -130,7 +130,7 @@ class Vector(object):
 
 def loadRing(distance, set):
     try:
-        file = open("assets/ringCache/{},{}.ringdat".format(distance, set), "rb")
+        file = open("biohex/assets/ringCache/{},{}.ringdat".format(distance, set), "rb")
         return pickle.load(file)
     except:
         return None
@@ -212,9 +212,9 @@ def saveGridRing(distance=1, set=0):
 
             newVector.turnRight(1)
 
-    if not exists("assets/ringCache/"):
-        mkdir("assets/ringCache/")
-    file = open("assets/ringCache/{},{}.ringdat".format(distance, set), "wb")
+    if not exists("biohex/assets/ringCache/"):
+        mkdir("biohex/assets/ringCache/")
+    file = open("biohex/assets/ringCache/{},{}.ringdat".format(distance, set), "wb")
     pickle.dump(tiles, file)
 
 def saveGridRings(amount=20):

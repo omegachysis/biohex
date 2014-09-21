@@ -12,8 +12,8 @@ class UI(object):
         self.engine = engine
         self.pygameDisplay = engine.pygameDisplay
 
-        self.font = pygame.freetype.Font("assets/consola.ttf", 13)
-        self.fontIcon = pygame.freetype.Font("assets/fontawesome.ttf", 13)
+        self.font = pygame.freetype.Font("biohex/assets/consola.ttf", 13)
+        self.fontIcon = pygame.freetype.Font("biohex/assets/fontawesome.ttf", 13)
 
         self.STATUS_BAR_TEXT_Y = self.engine.screen.height - UI.HEIGHT // 2
 

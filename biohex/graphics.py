@@ -43,7 +43,7 @@ class Engine(object):
         self.rendering = True       # whether or not every tick is to be rendered
 
         # load the icon that shows on the screen when entering performance mode ('p')
-        self.performanceModeIcon = pygame.image.load("assets/PerformanceModeIcon.png").convert_alpha()
+        self.performanceModeIcon = pygame.image.load("biohex/assets/PerformanceModeIcon.png").convert_alpha()
         self.performanceModeIcon.fill((255,255,255,100), special_flags=BLEND_RGBA_MULT)
         self.performanceModeIconWidth, self.performanceModeIconHeight = self.performanceModeIcon.get_size()
         self.performanceModeIconPos = (screen.width//2-self.performanceModeIconWidth//2,
@@ -189,8 +189,8 @@ class Engine(object):
 
 class RenderLoadingScreen(object):
     def __init__(self, screen, numLoadingDots=40):
-        self.mainIcon = pygame.image.load("assets/RenderIcon.png").convert_alpha()
-        self.loadingDotIcon = pygame.image.load("assets/RenderLoadingDot.png").convert_alpha()
+        self.mainIcon = pygame.image.load("biohex/assets/RenderIcon.png").convert_alpha()
+        self.loadingDotIcon = pygame.image.load("biohex/assets/RenderLoadingDot.png").convert_alpha()
         self.screen = screen
 
         self.width, self.height = self.mainIcon.get_size()
@@ -256,7 +256,7 @@ class Screen(object):
         self.width = width
         self.height = height
 
-        self.font = pygame.freetype.Font("assets/georgia.ttf", 30)
+        self.font = pygame.freetype.Font("biohex/assets/georgia.ttf", 30)
 
     def renderText(self, text, color = (0,0,0), x=0.50, y=0.75):
         surf, rect = self.font.render(text, color, (255,255,255))
@@ -294,10 +294,10 @@ class World(life.World):
         self.screen = screen
         self.loadingScreen = None
 
-        self._emptyBit = pygame.image.load("bitGraphics/_empty.png").convert()
+        self._emptyBit = pygame.image.load("biohex/bitGraphics/_empty.png").convert()
         self._emptyBit.set_colorkey((255,255,255))
 
-        blankThermalImage = pygame.image.load("assets/thermometerBlank.png").convert()
+        blankThermalImage = pygame.image.load("biohex/assets/thermometerBlank.png").convert()
 
         self.thermalImages = []
         for color in thermal.thermscale:
@@ -310,7 +310,7 @@ class World(life.World):
 
     def _loadBitSurfaces(self):
         for bitName in life.bitList:
-            surface = pygame.image.load("bitGraphics/" + bitName + ".png").convert()
+            surface = pygame.image.load("biohex/bitGraphics/" + bitName + ".png").convert()
             surface.set_colorkey((255,255,255))
             self._bitSurfaces[bitName] = surface
 

@@ -16,10 +16,13 @@ class locals():
         RING_CACHE = 0
         BIT_LISTER = 1
 
-# load up bit graphic asset names
-bitList = []
-for file in glob.glob("bitGraphics/*.png"):
-    bitList.append(path.basename(file)[:-4])
+try:
+    # load up bit graphic asset names
+    bitList = []
+    for file in glob.glob("biohex/bitGraphics/*.png"):
+        bitList.append(path.basename(file)[:-4])
+except:
+    pass
 
 def getBit(x, y):
     """Return the bit at this location.  If there is no bit, return False."""
