@@ -39,6 +39,23 @@ class ProteinMembraneGrower(biohex.life.Bit):
             self.placingType = ProteinCellMembrane
             self.outwardAmount += 1
 
+class ProteinCellMembraneDouble(biohex.life.Bit):
+
+    ATOMS = [3,1,0]
+
+    ENTROPY = 2
+    ENTHALPY = 3
+
+    THERMAL_RANGE = [18,45]
+
+    def __init__(self, x, y):
+        super().__init__(x,y)
+
+        self.startEnthalpy(random.randrange(400,500))
+
+    def tick(self):
+        super().tick()
+
 class ProteinCellMembrane(biohex.life.Bit):
 
     ATOMS = [3,1,0]
@@ -46,7 +63,7 @@ class ProteinCellMembrane(biohex.life.Bit):
     ENTROPY = 2
     ENTHALPY = 3
 
-    THERMAL_RANGE = [30,70]
+    THERMAL_RANGE = [15,45]
 
     def __init__(self, x, y):
         super().__init__(x,y)
@@ -55,16 +72,16 @@ class ProteinCellMembrane(biohex.life.Bit):
 
     def multiply(self):
         positions = self.getAdjValids()
-        self.becomeBits(ProteinCellMembrane, positions, args={}, saveEnthalpy=True)
+        self.becomeBits(ProteinCellMembraneDouble, positions, args={}, saveEnthalpy=True)
 
     def enthalpyProgress(self):
         super().enthalpyProgress()
 
         self.siphonResources("Lipid", 20, amountEnthalpy=self.ENTHALPY, amountAtoms=self.ATOMS,
-                             limitEnthalpy=self.ENTHALPY*5, limitAtoms=[i*5 for i in self.ATOMS],
+                             limitEnthalpy=self.ENTHALPY*6, limitAtoms=[i*6 for i in self.ATOMS],
                              technique=biohex.life.locals.distanceLookup.RING_CACHE)
 
-        if self.enthalpy >= self.ENTHALPY * 5:
+        if self.enthalpy >= self.ENTHALPY * 6:
             self.multiply()
 
     def tick(self):

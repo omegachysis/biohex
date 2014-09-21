@@ -49,7 +49,6 @@ class Necrosis(biohex.life.Bit):
         super().__init__(x,y)
 
         biohex.life.Looper(self, self.randomWalk, 5)
-        self.startEnthalpy(500)
 
     def tick(self):
         super().tick()

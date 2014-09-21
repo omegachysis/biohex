@@ -30,12 +30,7 @@ class Ribosome(biohex.life.Bit):
         self.rna = biohex.bits.functions._convertDNA(dna)
         self.frame = 0
 
-        if self.rna[0] == "{":
-            while self.rna[self.frame] != "}":
-                self.frame += 1
-        self.frame += 1
-
-        self.codeType = self.rna[self.frame]
+        self.codeType = self.rna[0]
         self.frame += 1
 
         self.chemicalIdentifier = random.randrange(0,100000)
@@ -43,6 +38,8 @@ class Ribosome(biohex.life.Bit):
         self.vector.angle = random.randrange(6)
 
         self.startEnthalpy(100)
+
+        self.temperature = 100
 
     def tick(self):
         super().tick()

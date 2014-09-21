@@ -14,7 +14,7 @@ class Experiment(object):
         self.world = world
 
     def probeThermalEnergy(self):
-        return round(self.world.thermalDelta, 3)
+        return int(self.world.thermalDelta)
 
     def probeTemperature(self):
         return round(self.world.thermalDelta / self.world.area + self.world.ambientTemperature, 3)

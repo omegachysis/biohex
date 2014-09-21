@@ -148,8 +148,6 @@ class Engine(object):
                     # draw bits that have changed or moved
                     self.world.drawDirtyBits()
 
-                    self.world.drawThermalView()
-
                     # draw the final screen canvas to the pygame display
                     self.screen.writeCanvas()
 
@@ -297,7 +295,6 @@ class World(life.World):
         self._emptyBit.set_colorkey((255,255,255))
 
         blankThermalImage = pygame.image.load("biohex/assets/thermometerBlank.png").convert()
-
         self.thermalImages = []
         for color in thermal.thermscale:
             newThermalImage = blankThermalImage.convert()
@@ -305,7 +302,7 @@ class World(life.World):
             newThermalImage.fill(color, special_flags = pygame.locals.BLEND_RGB_MULT)
             self.thermalImages.append(newThermalImage)
 
-        self.thermalViewingWindow = ((30,70), (30,50))
+        #self.thermalViewingWindow = ((30,70), (30,50))
 
     def _loadBitSurfaces(self):
         for bitName in life.bitList:

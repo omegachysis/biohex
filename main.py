@@ -62,16 +62,14 @@ def runGraphics():
 
     # RNA for ribosome.  details in bitLibrary.organelles.Ribosome
 
-    # the first set of data is epigenetic data
-    RNA = "{00" + "a"    + "b"     + "$" * 15 + "0000" + "a"    + "b"     + "0" + "}" + \
-           "Ag" + chr(5) + chr(15) + "m" * 15 + "rrrg" + chr(5) + chr(15) + "Q"
+    RNA = "Ag"     + chr(8)    + chr(15)    + "m" * 15  + "rrrg"    + chr(8)   + chr(15)   + "Q"
 
     DNA = bitLibrary.functions._convertRNA(RNA)
     print("DNA: ", DNA)
 
     bits.Ribosome(50, 40, DNA)
 
-    world.setAmbientTemperature(38)
+    world.setAmbientTemperature(25)
 
     for i in range(150):
         bits.Lipid(random.randrange(WORLD_WIDTH),

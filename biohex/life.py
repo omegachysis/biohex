@@ -125,6 +125,8 @@ class Bit(object):
     # if the temperature at its location becomes
     # too high.  Set to None for no temperature breakdown.
     THERMAL_RANGE = None
+
+    temperature = 0
     
     def __init__(self, x, y):
         self.name = self.__class__.__name__
@@ -153,6 +155,8 @@ class Bit(object):
 
         self.enthalpyLooper = None
         self.loopers = []
+
+        self.temperature = self.world.ambientTemperature
 
     def getPosition(self):
         return (self.x, self.y)
@@ -267,8 +271,8 @@ class Bit(object):
 
     def checkTemperature(self):
         if self.THERMAL_RANGE:
-            if self.world.getTemp(self.x, self.y) < self.THERMAL_RANGE[0] or \
-                self.world.getTemp(self.x, self.y) > self.THERMAL_RANGE[1]:
+            if self.temperature < self.THERMAL_RANGE[0] or \
+                self.temperature > self.THERMAL_RANGE[1]:
                 self.dieThermal()
 
     def tempRange(self, min, max):
@@ -451,10 +455,19 @@ class Bit(object):
     def enthalpyProgress(self):
         """Decrease enthalpy by one and call enthalpyUpdate()."""
         self.enthalpy -= 1
-        self.world.thermalTransfer(self.x, self.y, amount=.75, fuzzy=0)
-        self.world.thermalTransfer(self.x, self.y, amount=.25, fuzzy=1)
         self.enthalpyUpdate()
+
+        self.world.thermalData[self.y][self.x] += .5
+        self.temperature += .5
+        self.world.thermalDelta += 1
         self.checkTemperature()
+
+    def thermalEquilibrium(self):
+        worldTemp = self.world.getTemp(self.x, self.y)
+        average = (worldTemp + self.temperature)/2
+        self.world.setTemp(self.x, self.y, average)
+        self.world.thermalDelta += average - worldTemp
+        self.temperature = average
 
     def getIndex(self):
         """Return index of bit in life.world.bits list."""
@@ -659,6 +672,7 @@ class Bit(object):
             
         Bit.world.bitPositions[self.x][self.y] = self
 
+        self.thermalEquilibrium()
         self.checkTemperature()
 
         return val
@@ -678,9 +692,6 @@ class World(object):
 
     experiment = None
 
-    AMBIENT_COOLING_FACTOR = 0.001
-    _AMBIENT_TEMPERATURE_COOLING_DELAY = 10
-
     def __init__(self, width, height, passErrors = False):
         """
         Initialize a world with width and height in hexagon tiles.
@@ -697,8 +708,6 @@ class World(object):
         self.bits = []
         self.thermalData = []
         self.setAmbientTemperature(0)
-
-        self._ambientTemperatureCoolingWait = 0
 
         # all the bits that have changed and need to be redrawn
         self.dirtyBits = []
@@ -727,24 +736,14 @@ class World(object):
     def setTemp(self, x, y, value):
         self.thermalData[y][x] = value
 
-    def ambientTemperatureAdjust(self, amount):
-        for y in range(self.height):
-            for x in range(self.width):
-                self.thermalData[y][x] += amount
-
-    def ambientCooling(self, factor=AMBIENT_COOLING_FACTOR):
-        for y in range(self.height):
-            for x in range(self.width):
-                diff = self.thermalData[y][x] - self.ambientTemperature
-                self.thermalData[y][x] -= diff * factor
-                self.thermalDelta -= diff * factor
-
     def setAmbientTemperature(self, temperature):
         self.thermalData = []
         for y in range(self.height):
             self.thermalData.append([temperature] * self.width)
         self.thermalDelta = 0
         self.ambientTemperature = temperature
+        for bit in self.bits:
+            bit.temperature = temperature
 
     def thermalTransfer(self, x, y, amount, fuzzy=0):
         if fuzzy:
@@ -830,17 +829,10 @@ class World(object):
                 print(traceback.format_exc())
                 print("----------------------------\n")
                 bit.dieError()
-        self._ambientTemperatureCoolingWait -= 1
-        if self._ambientTemperatureCoolingWait <= 0:
-            self.ambientCooling()
-            self._ambientTemperatureCoolingWait = self._AMBIENT_TEMPERATURE_COOLING_DELAY
                 
     def tickNonPassErrors(self):
         self.tickNumber += 1
         for bit in self.bits:
             bit.tick()
-        if self._ambientTemperatureCoolingWait <= 0:
-            self.ambientCooling()
-            self._ambientTemperatureCoolingWait = self._AMBIENT_TEMPERATURE_COOLING_DELAY
 
     def tick(self): pass
