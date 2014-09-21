@@ -1,8 +1,7 @@
 
-import life
-import bits
+import biohex
 
-class AminoAcid(life.Bit):
+class AminoAcid(biohex.life.Bit):
     """ Used as a building block for life. """
     ATOMS = [7,6,2]
 
@@ -15,7 +14,7 @@ class AminoAcid(life.Bit):
     def tick(self):
         self.randomWalk()
 
-class Water(life.Bit):
+class Water(biohex.life.Bit):
     ATOMS = [1,1,0]
 
     ENTROPY = 5
@@ -27,7 +26,7 @@ class Water(life.Bit):
     def tick(self):
         self.randomWalk()
 
-class DenaturedNecrosis(life.Bit):
+class DenaturedNecrosis(biohex.life.Bit):
     ATOMS = [0,0,0]
 
     ENTROPY = 4
@@ -36,12 +35,12 @@ class DenaturedNecrosis(life.Bit):
     def __init__(self, x, y):
         super().__init__(x,y)
 
-        life.Looper(self, self.randomWalk, 5)
+        biohex.life.Looper(self, self.randomWalk, 5)
 
     def tick(self):
         super().tick()
 
-class Necrosis(life.Bit):
+class Necrosis(biohex.life.Bit):
     ATOMS = [0,0,0]
     ENTROPY = 4
     ENTHALPY = 0
@@ -49,13 +48,13 @@ class Necrosis(life.Bit):
     def __init__(self, x, y):
         super().__init__(x,y)
 
-        life.Looper(self, self.randomWalk, 5)
+        biohex.life.Looper(self, self.randomWalk, 5)
         self.startEnthalpy(500)
 
     def tick(self):
         super().tick()
 
-class LipidSalt(life.Bit):
+class LipidSalt(biohex.life.Bit):
     ATOMS = [5,5,1]
 
     ENTROPY = 5
@@ -64,12 +63,12 @@ class LipidSalt(life.Bit):
     def __init__(self, x, y):
         super().__init__(x,y)
 
-        life.Looper(self, self.randomWalk, 5)
+        biohex.life.Looper(self, self.randomWalk, 5)
 
     def tick(self):
         super().tick()
 
-class Lipid(life.Bit):
+class Lipid(biohex.life.Bit):
     ATOMS = [5,5,1]
 
     ENTROPY = 4
@@ -78,7 +77,7 @@ class Lipid(life.Bit):
     def __init__(self, x, y):
         super().__init__(x,y)
 
-        life.Looper(self, self.randomWalk, 2)
+        biohex.life.Looper(self, self.randomWalk, 2)
 
     def enthalpyDeath(self):
         self.becomeBit(LipidSalt)
@@ -86,7 +85,7 @@ class Lipid(life.Bit):
     def tick(self):
         super().tick()
     
-class CausticNecrosis(life.Bit):
+class CausticNecrosis(biohex.life.Bit):
     ATOMS = [0,0,0]
 
     ENTROPY = 10
@@ -95,7 +94,7 @@ class CausticNecrosis(life.Bit):
     def __init__(self, x, y):
         super().__init__(x,y)
 
-        life.Looper(self, self.randomWalk, 5)
+        biohex.life.Looper(self, self.randomWalk, 5)
 
     def tick(self):
         super().tick()

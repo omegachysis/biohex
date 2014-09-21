@@ -1,9 +1,8 @@
 
-import life
-import bits
 import random
+import biohex
 
-class OrganelleMatrix(life.Bit):
+class OrganelleMatrix(biohex.life.Bit):
     ATOMS = [1,1,1]
 
     ENTROPY = 1
@@ -17,7 +16,7 @@ class OrganelleMatrix(life.Bit):
     def tick(self):
         super().tick()
 
-class Ribosome(life.Bit):
+class Ribosome(biohex.life.Bit):
     """ Turns genetic code and raw materials into proteins. """
     
     ATOMS = [800,500,300]
@@ -28,7 +27,7 @@ class Ribosome(life.Bit):
     def __init__(self, x, y, dna):
         super().__init__(x,y)
 
-        self.rna = bits.functions._convertDNA(dna)
+        self.rna = biohex.bits.functions._convertDNA(dna)
         self.frame = 0
 
         if self.rna[0] == "{":
@@ -59,27 +58,27 @@ class Ribosome(life.Bit):
                 codonArg2 = self.rna[self.frame]
 
                 growthAmount = ord(codonArg1)
-                giveAtoms = [i * growthAmount * 2 for i in bits.ProteinCellMembrane.ATOMS]
-                giveEnthalpy = bits.ProteinCellMembrane.ENTHALPY * growthAmount * 2
+                giveAtoms = [i * growthAmount * 2 for i in biohex.bits.ProteinCellMembrane.ATOMS]
+                giveEnthalpy = biohex.bits.ProteinCellMembrane.ENTHALPY * growthAmount * 2
 
                 extraAmounts = ord(codonArg2) + growthAmount
 
-                giveMoreAtoms = [i*(extraAmounts+growthAmount) for i in bits.ProteinCellMembrane.ATOMS]
-                giveMoreEnthalpy = bits.ProteinCellMembrane.ENTHALPY * (growthAmount + extraAmounts)
+                giveMoreAtoms = [i*(extraAmounts+growthAmount) for i in biohex.bits.ProteinCellMembrane.ATOMS]
+                giveMoreEnthalpy = biohex.bits.ProteinCellMembrane.ENTHALPY * (growthAmount + extraAmounts)
                 
-                self.makeBit(bits.ProteinMembraneGrower, self.vector.behind,
+                self.makeBit(biohex.bits.ProteinMembraneGrower, self.vector.behind,
                              enthalpy = giveEnthalpy, atoms = giveAtoms,
                              args = {"growingAngle" : self.vector.angle - 3, "outwardLength" : growthAmount})
 
                 self.vector.turnRight()
                 
-                self.makeBit(bits.ProteinMembraneGrower, self.vector.behind,
+                self.makeBit(biohex.bits.ProteinMembraneGrower, self.vector.behind,
                              enthalpy = giveMoreEnthalpy, atoms = giveMoreAtoms,
                              args = {"growingAngle" : self.vector.angle - 3, "outwardLength" : growthAmount})
 
                 self.vector.turnLeft(2)
                 
-                self.makeBit(bits.ProteinMembraneGrower, self.vector.behind,
+                self.makeBit(biohex.bits.ProteinMembraneGrower, self.vector.behind,
                              enthalpy = giveEnthalpy, atoms = giveAtoms,
                              args = {"growingAngle" : self.vector.angle - 3, "outwardLength" : growthAmount})
 
@@ -92,7 +91,7 @@ class Ribosome(life.Bit):
 
             elif codon == 'm':
                 if self.moveForward():
-                    if not self.makeBit(bits.OrganelleMatrix, self.vector.behind):
+                    if not self.makeBit(biohex.bits.OrganelleMatrix, self.vector.behind):
                         self.frame -= 1
                         self.moveto(self.vector.behind)
 
@@ -100,7 +99,7 @@ class Ribosome(life.Bit):
                 self.moveto(self.vector.ahead)
                     
             elif codon == 'Q':
-                self.becomeBits(bits.Lipid, self.getAdjValids(), {}, True)
+                self.becomeBits(biohex.bits.Lipid, self.getAdjValids(), {}, True)
 
             else:
                 self.frame += 1

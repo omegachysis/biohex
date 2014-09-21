@@ -1,4 +1,2 @@
 
-import life
-import bits
-import thermal
+from . import life

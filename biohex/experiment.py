@@ -1,5 +1,5 @@
 
-import life
+from biohex import life
 
 class Experiment(object):
     """

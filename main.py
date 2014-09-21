@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
 import pygame
-import hexmech
-import bits
-import life
-import graphics
 import traceback
 import random
 
 import sys
 
-import bitLibrary
+from biohex import hexmech
+from biohex import bits
+from biohex import life
+from biohex import graphics
+from biohex import bitLibrary
 
 pygame.init()
 

@@ -1,8 +1,7 @@
 
-import life
-import bits
+import biohex
 
-class Test(life.Bit):
+class Test(biohex.life.Bit):
     ATOMS = [0,0,0]
     ENTHALPY = 0
     ENTROPY = 0

@@ -1,14 +1,12 @@
 
 import random
-import hexmech
 import glob
 from os import path
 
-import bits
+import biohex
 
 import math
 import traceback
-import experiment
 
 # storage class for constants
 class locals():
@@ -151,7 +149,7 @@ class Bit(object):
         else:
             self.destroyed = True
 
-        self.vector = hexmech.Vector(self, 0)
+        self.vector = biohex.hexmech.Vector(self, 0)
 
         self.enthalpyLooper = None
         self.loopers = []
@@ -164,23 +162,23 @@ class Bit(object):
 
     def getRings(self, distance):
         """Get all hexagon rings up to a distance around this bit's position."""
-        return hexmech.getRings(self.x, self.y, distance)
+        return biohex.hexmech.getRings(self.x, self.y, distance)
 
     def getRing(self, distance):
         """Get a hexagon ring at a distance around this bit's position."""
-        return hexmech.getRing(self.x, self.y, distance)
+        return biohex.hexmech.getRing(self.x, self.y, distance)
 
     def die(self):
         """Turn this bit into a Necrosis bit, prevserving current atoms and enthalpy."""
-        self.becomeBit(bits.Necrosis, {}, True)
+        self.becomeBit(biohex.bits.Necrosis, {}, True)
 
     def dieThermal(self):
         """Turn this bit into a DenaturedNecrosis bit, signifying that it overheated."""
-        self.becomeBit(bits.DenaturedNecrosis, {}, True)
+        self.becomeBit(biohex.bits.DenaturedNecrosis, {}, True)
         
     def dieError(self):
         """Turn this bit into a CausticNecrosis bit, signifiying a critical internal error."""
-        self.becomeBit(bits.CausticNecrosis, {}, False)
+        self.becomeBit(biohex.bits.CausticNecrosis, {}, False)
 
     def siphonEnthalpy(self, bitName, distance, amount=1, limit=None, technique=locals.distanceLookup.RING_CACHE):
         """
@@ -575,7 +573,7 @@ class Bit(object):
         if not coord:
             coord = (self.x, self.y)
 
-        return hexmech.getAdjs(self.x, self.y)
+        return biohex.hexmech.getAdjs(self.x, self.y)
 
     def getAdjBits(self, coord=None):
         """Return all adjacent bits."""
@@ -722,7 +720,7 @@ class World(object):
         self.tickNumber = 0
 
         # create new experiment object
-        self.experiment = experiment.Experiment(self)
+        self.experiment = biohex.experiment.Experiment(self)
 
     def getTemp(self, x, y):
         return self.thermalData[y][x]

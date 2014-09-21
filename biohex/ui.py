@@ -1,5 +1,4 @@
 
-import graphics
 from pygame import locals
 import pygame
 

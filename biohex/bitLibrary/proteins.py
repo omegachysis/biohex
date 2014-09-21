@@ -1,9 +1,8 @@
 
-import life
-import bits
 import random
+import biohex
 
-class ProteinMembraneGrower(life.Bit):
+class ProteinMembraneGrower(biohex.life.Bit):
     ATOMS = None
 
     ENTROPY = 1
@@ -32,7 +31,7 @@ class ProteinMembraneGrower(life.Bit):
                 self.outwardAmount += 1
 
         else:
-            if life.getBit(*self.vector.ahead).name == "ProteinCellMembrane":
+            if biohex.life.getBit(*self.vector.ahead).name == "ProteinCellMembrane":
                 self.becomeBit(ProteinCellMembrane, args={}, saveEnthalpy=True)
 
         if self.outwardAmount == self.outwardLength:
@@ -40,7 +39,7 @@ class ProteinMembraneGrower(life.Bit):
             self.placingType = ProteinCellMembrane
             self.outwardAmount += 1
 
-class ProteinCellMembrane(life.Bit):
+class ProteinCellMembrane(biohex.life.Bit):
 
     ATOMS = [3,1,0]
 
@@ -63,7 +62,7 @@ class ProteinCellMembrane(life.Bit):
 
         self.siphonResources("Lipid", 20, amountEnthalpy=self.ENTHALPY, amountAtoms=self.ATOMS,
                              limitEnthalpy=self.ENTHALPY*5, limitAtoms=[i*5 for i in self.ATOMS],
-                             technique=life.locals.distanceLookup.RING_CACHE)
+                             technique=biohex.life.locals.distanceLookup.RING_CACHE)
 
         if self.enthalpy >= self.ENTHALPY * 5:
             self.multiply()
@@ -71,7 +70,7 @@ class ProteinCellMembrane(life.Bit):
     def tick(self):
         super().tick()
 
-class ProteinConnectiveMembrane(life.Bit):
+class ProteinConnectiveMembrane(biohex.life.Bit):
 
     ATOMS = [3,1,0]
 

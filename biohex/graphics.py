@@ -7,13 +7,12 @@ import math
 
 import traceback
 
-import hexmech
-import life
-import bits
-import ui
-import thermal
-
-import experiment
+from biohex import hexmech
+from biohex import life
+from biohex import bits
+from biohex import ui
+from biohex import thermal
+from biohex import experiment
 
 pygame.init()
 pygame.freetype.init()
